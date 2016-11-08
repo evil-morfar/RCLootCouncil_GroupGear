@@ -17,7 +17,7 @@ local scrollCols = {
 }
 
 local ROW_HEIGHT = 20
-local registeredPlayers = {}
+local registeredPlayers = {} -- names are stored in lowercase for consistency
 
 
 function GroupGear:OnInitialize()
@@ -80,7 +80,7 @@ function GroupGear:Hide()
 end
 
 function GroupGear:IsShown()
-   return self.frame and self.frame:IsVisible() 
+   return self.frame and self.frame:IsVisible()
 end
 
 function GroupGear:Query(method)
@@ -107,7 +107,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits)
       {value = artifactTraits or "Unknown"},
       {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name}
    })
-   registeredPlayers[name] = #self.frame.rows
+   registeredPlayers[name:lower()] = #self.frame.rows
    self.frame.st:SortData()
 end
 
@@ -115,7 +115,7 @@ function GroupGear:UpdateEntry(name, ilvl)
    -- We'll assume it's only when player's doesn't have GG installed that updates occur,
    -- so only update ilvl
    -- Find out which row they're at
-   local row = registeredPlayers[name]
+   local row = registeredPlayers[name:lower()]
    -- And edit the value if we have the data, otherwise keep what we have
    self.frame.rows[row][4].value = ilvl and addon.round(ilvl,2) or self.frame.rows[row][4].value
    self.frame.st:Refresh()
@@ -128,6 +128,7 @@ function GroupGear:GetGroupGearInfo()
 end
 
 function GroupGear:IsPlayerRegistered(name)
+   name = name:lower()
    for k in pairs(registeredPlayers) do
       if k == name then return true end
    end
