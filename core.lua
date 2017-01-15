@@ -16,8 +16,8 @@ local scrollCols = {
    { name = L["Rank"],  width = 95},                                             -- guild Rank
    { name = L["ilvl"],  width = 55,  align = "CENTER"},                          -- ilvl
    { name = "A. traits",width = 55,  align = "CENTER"},                          -- # of artifact traits
-   { name = "Gear",     width = ROW_HEIGHT * num_display_gear, DoCellUpdate = GroupGear.SetCellGear, },    -- Gear
-   { name = "",         width = 25,  DoCellUpdate = GroupGear.SetCellRefresh,},  -- Refresh icon
+   { name = "Gear",     width = ROW_HEIGHT * num_display_gear, align = "CENTER" },    -- Gear
+   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},  -- Refresh icon
 }
 
 
@@ -109,8 +109,8 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
       {value = guildRank or "Unknown"},
       {value = addon.round(ilvl,2)},
       {value = artifactTraits or "Unknown"},
+      {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
       {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
-      {value = "", gear = gear},
    })
    registeredPlayers[name:lower()] = #self.frame.rows
    self.frame.st:SortData()
@@ -137,9 +137,10 @@ function GroupGear:GetPlayersGear()
    local ret = {}
    for i = 1, 17 do
       if i ~= 4 then -- skip the shirt
-         local link = GetInventoryItemLink(player, i)
+         local link = GetInventoryItemLink("player", i)
          addon:Print("Slot:", i, link)
-         tinsert(ret, addon:GetItemStringFromLink(link))
+         --tinsert(ret, addon:GetItemStringFromLink(link))
+         tinsert(ret, link)
       end
    end
    return ret
@@ -196,32 +197,35 @@ function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, col
    frame.btn = f
 end
 
-
-
 function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local gear = data[realrow][column].gear
+   addon:Debug("SetCellGear", #gear)
+   if gear == nil then return end -- Gear might not be received yet
    -- Function to create a frame containing the x num of gear frames
    local function create()
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
-      f:SetPoint("CENTER", frame, "CENTER")
-      f:SetSize(ROW_HEIGHT, ROW_HEIGHT * num_display_gear)
+      f:SetPoint("LEFT", frame, "LEFT")
+      f:SetSize(ROW_HEIGHT * num_display_gear, ROW_HEIGHT)
       f.gear = {}
       -- Create the individual pieces' frame
       for i = 1, num_display_gear do
-         f.gear[i] = CreateFrame("Frame", f:GetName()..i, f)
+         f.gear[i] = CreateFrame("Button", f:GetName()..i, f)
          if i == 1 then
-            f.gear[i]:SetPoint("LEFT", f, "LEFT")
+            f.gear[i]:SetPoint("LEFT", f, "LEFT",0,0)
          else
-            f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT")
+            f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT",0,0)
          end
          f.gear[i]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
-         f.gear[i]:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
+
          f.gear[i]:SetScript("OnLeave", function() addon:HideTooltip() end)
       end
+      return f
    end
    if not frame.container then frame.container = create() end
-   -- Update icons
+   -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
-      gearFrame:SetNormalTexture(select(10, GetItemInfo(gear[i])))
+      gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
+      local texture = select(10, GetItemInfo(gear[i] or ""))
+      gearFrame:SetNormalTexture(texture)
    end
 end
