@@ -174,6 +174,6 @@ function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, col
       addon:SendCommand("group", "groupGearRequest")
    end)
    f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh")end)
-   f:SetScript("OnLeave", addon.HideTooltip)
+   f:SetScript("OnLeave", function() addon:HideTooltip() end)
    frame.btn = f
 end
