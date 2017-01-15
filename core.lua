@@ -138,7 +138,6 @@ function GroupGear:GetPlayersGear()
    for i = 1, 17 do
       if i ~= 4 then -- skip the shirt
          local link = GetInventoryItemLink("player", i)
-         addon:Print("Slot:", i, link)
          --tinsert(ret, addon:GetItemStringFromLink(link))
          tinsert(ret, link)
       end
@@ -199,8 +198,8 @@ end
 
 function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local gear = data[realrow][column].gear
-   addon:Debug("SetCellGear", #gear)
    if gear == nil then return end -- Gear might not be received yet
+   addon:Debug("SetCellGear", #gear)
    -- Function to create a frame containing the x num of gear frames
    local function create()
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
