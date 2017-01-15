@@ -7,16 +7,20 @@ local GroupGear = addon:NewModule("RCGroupGear", "AceComm-3.0", "AceConsole-3.0"
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local ST = LibStub("ScrollingTable")
 
+local ROW_HEIGHT = 20
+local num_display_gear = 16
+
 local scrollCols = {
-   { name = "",         width = 20,   DoCellUpdate = addon.SetCellClassIcon,},   -- class icon
-   { name = L["Name"],     width = 120},                                            -- Player name
-   { name = L["Rank"],     width = 95},                                             -- guild Rank
-   { name = L["ilvl"],     width = 55,   align = "CENTER"},                         -- ilvl
-   { name = "A. traits", width = 55,  align = "CENTER"},                         -- # of artifact traits
-   { name = "",         width = 25,   DoCellUpdate = GroupGear.SetCellRefresh, } -- Refresh icon
+   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},    -- class icon
+   { name = L["Name"],  width = 120},                                            -- Player name
+   { name = L["Rank"],  width = 95},                                             -- guild Rank
+   { name = L["ilvl"],  width = 55,  align = "CENTER"},                          -- ilvl
+   { name = "A. traits",width = 55,  align = "CENTER"},                          -- # of artifact traits
+   { name = "Gear",     width = ROW_HEIGHT * num_display_gear, DoCellUpdate = GroupGear.SetCellGear, },    -- Gear
+   { name = "",         width = 25,  DoCellUpdate = GroupGear.SetCellRefresh,},  -- Refresh icon
 }
 
-local ROW_HEIGHT = 20
+
 local registeredPlayers = {} -- names are stored in lowercase for consistency
 
 
@@ -48,12 +52,12 @@ function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
          if command == "groupGearRequest" then
             addon:SendCommand(sender, "groupGearResponse", self:GetGroupGearInfo())
          elseif command == "groupGearResponse" then
-            local name, class, guildRank, ilvl, artifactTraits = unpack(data)
+            local name, class, guildRank, ilvl, artifactTraits, gear = unpack(data)
             if self:IsPlayerRegistered(name) then
                -- Just readd them, as we have all the needed info
                tremove(self.frame.rows, registeredPlayers[name])
             end
-            self:AddEntry(name, class, guildRank, ilvl, artifactTraits)
+            self:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
 
          elseif command == "playerInfo" then
             -- We could receive this while we're not running, in which case we'll do nothing
@@ -98,14 +102,15 @@ function GroupGear:Query(method)
    self.frame.st:SetData(self.frame.rows, true)
 end
 
-function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits)
+function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
    tinsert(self.frame.rows, {
       {args = {class} },
       {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
       {value = guildRank or "Unknown"},
       {value = addon.round(ilvl,2)},
       {value = artifactTraits or "Unknown"},
-      {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name}
+      {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
+      {value = "", gear = gear},
    })
    registeredPlayers[name:lower()] = #self.frame.rows
    self.frame.st:SortData()
@@ -124,7 +129,20 @@ end
 -- Function to return everything needed by GroupGear to the requester
 function GroupGear:GetGroupGearInfo()
    local name, class, _, guildRank, _, _, ilvl = addon:GetPlayerInfo()
-   return name, class, guildRank, ilvl, select(6,C_ArtifactUI.GetEquippedArtifactInfo())
+   return name, class, guildRank, ilvl, select(6,C_ArtifactUI.GetEquippedArtifactInfo()), self:GetPlayersGear()
+end
+
+-- Returns a table containing the itemStrings of the player's gear
+function GroupGear:GetPlayersGear()
+   local ret = {}
+   for i = 1, 17 do
+      if i ~= 4 then -- skip the shirt
+         local link = GetInventoryItemLink(player, i)
+         addon:Print("Slot:", i, link)
+         tinsert(ret, addon:GetItemStringFromLink(link))
+      end
+   end
+   return ret
 end
 
 function GroupGear:IsPlayerRegistered(name)
@@ -176,4 +194,34 @@ function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, col
    f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh")end)
    f:SetScript("OnLeave", function() addon:HideTooltip() end)
    frame.btn = f
+end
+
+
+
+function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+   local gear = data[realrow][column].gear
+   -- Function to create a frame containing the x num of gear frames
+   local function create()
+      local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
+      f:SetPoint("CENTER", frame, "CENTER")
+      f:SetSize(ROW_HEIGHT, ROW_HEIGHT * num_display_gear)
+      f.gear = {}
+      -- Create the individual pieces' frame
+      for i = 1, num_display_gear do
+         f.gear[i] = CreateFrame("Frame", f:GetName()..i, f)
+         if i == 1 then
+            f.gear[i]:SetPoint("LEFT", f, "LEFT")
+         else
+            f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT")
+         end
+         f.gear[i]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
+         f.gear[i]:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
+         f.gear[i]:SetScript("OnLeave", function() addon:HideTooltip() end)
+      end
+   end
+   if not frame.container then frame.container = create() end
+   -- Update icons
+   for i, gearFrame in ipairs(frame.container.gear) do
+      gearFrame:SetNormalTexture(select(10, GetItemInfo(gear[i])))
+   end
 end
