@@ -29,11 +29,11 @@ function GroupGear:OnInitialize()
 
    -- register chat and comms
 	addon:CustomChatCmd(self, "Enable", "gg", "groupgear", "gear")
-	self:RegisterComm("RCLootCouncil")
 end
 
 function GroupGear:OnEnable()
    addon:Debug("GroupGear", self.version, "enabled")
+   self:RegisterComm("RCLootCouncil")
    self:Show()
 end
 
@@ -112,7 +112,7 @@ function GroupGear:Refresh()
          num = num + 1
       end
    end
-   self.frame.avgilvl:SetText("Average ilvl: "..ilvl/num)
+   self.frame.avgilvl:SetText("Average ilvl: "..addon.round(ilvl/num))
 end
 
 function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
