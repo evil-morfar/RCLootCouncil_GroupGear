@@ -112,7 +112,7 @@ function GroupGear:Refresh()
          num = num + 1
       end
    end
-   self.frame.avgilvl:SetText("Average ilvl: "..addon.round(ilvl/num))
+   self.frame.avgilvl:SetText("Average ilvl: "..addon.round(ilvl/num, 2))
 end
 
 function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
