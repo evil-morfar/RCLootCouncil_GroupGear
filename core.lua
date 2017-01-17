@@ -13,7 +13,7 @@ local num_display_gear = 16
 local scrollCols = {
    { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},    -- class icon
    { name = L["Name"],  width = 120},                                            -- Player name
-   { name = L["Rank"],  width = 95},                                             -- guild Rank
+--   { name = L["Rank"],  width = 95},                                             -- guild Rank
    { name = L["ilvl"],  width = 55,  align = "CENTER"},                          -- ilvl
    { name = "A. traits",width = 55,  align = "CENTER"},                          -- # of artifact traits
    { name = "Gear",     width = ROW_HEIGHT * num_display_gear, align = "CENTER" },    -- Gear
@@ -106,7 +106,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
    tinsert(self.frame.rows, {
       {args = {class} },
       {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-      {value = guildRank or "Unknown"},
+   --   {value = guildRank or "Unknown"},
       {value = addon.round(ilvl,2)},
       {value = artifactTraits or "Unknown"},
       {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
@@ -215,8 +215,12 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
             f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT",0,0)
          end
          f.gear[i]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
-
          f.gear[i]:SetScript("OnLeave", function() addon:HideTooltip() end)
+         f.gear[i].ilvl = f.gear[i]:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
+         f.gear[i].ilvl:SetPoint("BOTTOM")
+         f.gear[i].ilvl:SetWidth(25)
+         f.gear[i].ilvl:SetFont("Fonts\\FRIZQT__.TTF", 8, "OUTLINE")
+         f.gear[i].ilvl:SetText(" ")
       end
       return f
    end
@@ -224,7 +228,10 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
-      local texture = select(10, GetItemInfo(gear[i] or ""))
+      local _, _, quality, ilvl, _, _, _, _, _, texture = GetItemInfo(gear[i] or "")
       gearFrame:SetNormalTexture(texture)
+      gearFrame.ilvl:SetText(ilvl)
+      local r,g,b = GetItemQualityColor(quality or 1)
+      gearFrame.ilvl:SetTextColor(r,g,b,1)
    end
 end
