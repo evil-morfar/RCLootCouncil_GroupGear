@@ -6,6 +6,9 @@
   * Removed as the window felt too large.
 
 
+* Added the average item level of the queried group.
+
+
 ### v1.1.0
 ---
 * **Gear**

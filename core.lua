@@ -102,6 +102,19 @@ function GroupGear:Query(method)
    self.frame.st:SetData(self.frame.rows, true)
 end
 
+function GroupGear:Refresh()
+   self.frame.st:SortData()
+   -- Calculate total ilvl
+   local ilvl, num = 0, 0
+   for i = 1, #self.frame.rows do
+      if self.frame.rows[i][3].value ~= "Unknown" then
+         ilvl = ilvl + self.frame.rows[i][3].value
+         num = num + 1
+      end
+   end
+   self.frame.avgilvl:SetText("Average ilvl: "..ilvl/num)
+end
+
 function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
    tinsert(self.frame.rows, {
       {args = {class} },
@@ -113,7 +126,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
       {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
    })
    registeredPlayers[name:lower()] = #self.frame.rows
-   self.frame.st:SortData()
+   self:Refresh()
 end
 
 function GroupGear:UpdateEntry(name, ilvl)
@@ -122,7 +135,7 @@ function GroupGear:UpdateEntry(name, ilvl)
    -- Find out which row they're at
    local row = registeredPlayers[name:lower()]
    -- And edit the value if we have the data, otherwise keep what we have
-   self.frame.rows[row][4].value = ilvl and addon.round(ilvl,2) or self.frame.rows[row][4].value
+   self.frame.rows[row][3].value = ilvl and addon.round(ilvl,2) or self.frame.rows[row][3].value
    self.frame.st:Refresh()
 end
 
@@ -176,6 +189,11 @@ function GroupGear:GetFrame()
    b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -10, 10)
    b3:SetScript("OnClick", function() self:Disable() end)
    f.closeButton = b3
+
+   local f1 = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
+   f1:SetPoint("LEFT", b2, "RIGHT", 10, 0)
+   f1:SetTextColor(1,1,1,1)
+   f.avgilvl = f1
 
    return f
 end
