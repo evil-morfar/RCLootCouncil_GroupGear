@@ -1,3 +1,5 @@
+### v1.2.0
+---
 * **Gear**
   * Added ilvl inside the gear icons.
 
