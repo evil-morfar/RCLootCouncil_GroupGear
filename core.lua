@@ -34,6 +34,7 @@ function GroupGear:OnEnable()
    addon:Debug("GroupGear", self.version, "enabled")
    addon:CustomChatCmd(self, "Show", "gg", "groupgear", "gear")
    self:RegisterComm("RCLootCouncil")
+   self.frame = self:GetFrame()
 end
 
 function GroupGear:OnDisable()
@@ -49,7 +50,7 @@ function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
 
       if test then
          if command == "groupGearRequest" then
-            addon:SendCommand(sender, "groupGearResponse", self:GetGroupGearInfo())
+            addon:SendCommand("group", "groupGearResponse", self:GetGroupGearInfo())
          elseif command == "groupGearResponse" then
             local name, class, guildRank, ilvl, artifactTraits, gear = unpack(data)
             if self:IsPlayerRegistered(name) then

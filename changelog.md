@@ -3,6 +3,8 @@
 * Guild and Group buttons switched places to be in line with the Version Checker.
 * Convinced clients to respond to Guild/Group requests without opening the window.*
 
+* *Now works crossrealm.*
+
 
 ### v1.2.0
 ---
