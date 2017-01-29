@@ -26,15 +26,14 @@ local registeredPlayers = {} -- names are stored in lowercase for consistency
 
 function GroupGear:OnInitialize()
    self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
-
    -- register chat and comms
-	addon:CustomChatCmd(self, "Enable", "gg", "groupgear", "gear")
+   self:Enable()
 end
 
 function GroupGear:OnEnable()
    addon:Debug("GroupGear", self.version, "enabled")
+   addon:CustomChatCmd(self, "Show", "gg", "groupgear", "gear")
    self:RegisterComm("RCLootCouncil")
-   self:Show()
 end
 
 function GroupGear:OnDisable()
@@ -175,19 +174,19 @@ function GroupGear:GetFrame()
    f.rows = {}
 	f.st = st
 
-   local b1 = addon:CreateButton(L["Group"], f.content)
+   local b1 = addon:CreateButton(L["Guild"], f.content)
    b1:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 10)
-   b1:SetScript("OnClick", function() self:Query("group") end)
+   b1:SetScript("OnClick", function() self:Query("guild") end)
    f.groupButton = b1
 
-   local b2 = addon:CreateButton(L["Guild"], f.content)
+   local b2 = addon:CreateButton(L["Group"], f.content)
    b2:SetPoint("LEFT", b1, "RIGHT", 10, 0)
-   b2:SetScript("OnClick", function() self:Query("guild") end)
+   b2:SetScript("OnClick", function() self:Query("group") end)
    f.guildButton = b2
 
    local b3 = addon:CreateButton(L.Close, f.content)
    b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -10, 10)
-   b3:SetScript("OnClick", function() self:Disable() end)
+   b3:SetScript("OnClick", function() self:Hide() end)
    f.closeButton = b3
 
    local f1 = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")

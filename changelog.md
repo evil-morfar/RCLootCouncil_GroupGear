@@ -1,3 +1,9 @@
+### v1.2.1
+---
+* Guild and Group buttons switched places to be in line with the Version Checker.
+* Convinced clients to respond to Guild/Group requests without opening the window.*
+
+
 ### v1.2.0
 ---
 * **Gear**
