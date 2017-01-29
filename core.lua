@@ -216,7 +216,6 @@ end
 function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local gear = data[realrow][column].gear
    if gear == nil then return end -- Gear might not be received yet
-   addon:Debug("SetCellGear", #gear)
    -- Function to create a frame containing the x num of gear frames
    local function create()
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
