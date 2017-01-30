@@ -1,3 +1,9 @@
+### v1.2.2
+---
+* *The crossrealm fix made it unable to respond to guild requests.*
+* *Sorting the columns will now properly update the gear column.*
+* *Should no longer show dublicates.*
+
 ### v1.2.1
 ---
 * Guild and Group buttons switched places to be in line with the Version Checker.

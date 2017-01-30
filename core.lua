@@ -50,12 +50,16 @@ function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
 
       if test then
          if command == "groupGearRequest" then
-            addon:SendCommand("group", "groupGearResponse", self:GetGroupGearInfo())
+            if distri == "GUILD" then
+               addon:SendCommand("guild", "groupGearResponse", self:GetGroupGearInfo())
+            else
+               addon:SendCommand("group", "groupGearResponse", self:GetGroupGearInfo())
+            end
          elseif command == "groupGearResponse" then
             local name, class, guildRank, ilvl, artifactTraits, gear = unpack(data)
             if self:IsPlayerRegistered(name) then
                -- Just readd them, as we have all the needed info
-               tremove(self.frame.rows, registeredPlayers[name])
+               tremove(self.frame.rows, registeredPlayers[name:lower()])
             end
             self:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
 
@@ -216,7 +220,6 @@ end
 
 function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local gear = data[realrow][column].gear
-   if gear == nil then return end -- Gear might not be received yet
    -- Function to create a frame containing the x num of gear frames
    local function create()
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
@@ -242,6 +245,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       return f
    end
    if not frame.container then frame.container = create() end
+   if gear == nil then return frame.container:Hide() end -- Gear might not be received yet
    -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
@@ -251,4 +255,5 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       local r,g,b = GetItemQualityColor(quality or 1)
       gearFrame.ilvl:SetTextColor(r,g,b,1)
    end
+   frame.container:Show()
 end
