@@ -11,13 +11,13 @@ local ROW_HEIGHT = 20
 local num_display_gear = 16
 
 local scrollCols = {
-   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},    -- class icon
-   { name = L["Name"],  width = 120},                                            -- Player name
---   { name = L["Rank"],  width = 95},                                             -- guild Rank
-   { name = L["ilvl"],  width = 55,  align = "CENTER"},                          -- ilvl
-   { name = "A. traits",width = 55,  align = "CENTER"},                          -- # of artifact traits
-   { name = "Gear",     width = ROW_HEIGHT * num_display_gear, align = "CENTER" },    -- Gear
-   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},  -- Refresh icon
+   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},       -- class icon
+   { name = L["Name"],  width = 120},                                               -- Player name
+--   { name = L["Rank"],  width = 95},                                              -- guild Rank
+   { name = L["ilvl"],  width = 55,  align = "CENTER"},                             -- ilvl
+   { name = "A. traits",width = 55,  align = "CENTER"},                             -- # of artifact traits
+   { name = "Gear",     width = ROW_HEIGHT * num_display_gear, align = "CENTER" },  -- Gear
+   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},     -- Refresh icon
 }
 
 
@@ -210,8 +210,8 @@ function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, col
    f:SetNormalTexture("Interface/BUTTONS/UI-RotationRight-Button-Up")
    f:SetPushedTexture("Interface/BUTTONS/UI-RotationRight-Button-Down")
    f:SetScript("OnClick", function()
-      addon:SendCommand("group", "playerInfoRequest")
-      addon:SendCommand("group", "groupGearRequest")
+      addon:SendCommand(name, "playerInfoRequest")
+      addon:SendCommand(name, "groupGearRequest")
    end)
    f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh")end)
    f:SetScript("OnLeave", function() addon:HideTooltip() end)
