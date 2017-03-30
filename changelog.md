@@ -1,3 +1,8 @@
+### v1.2.3
+---
+* Updated .toc for 7.2.
+
+
 ### v1.2.2
 ---
 * *The crossrealm fix made it unable to respond to guild requests.*
