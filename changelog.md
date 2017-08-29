@@ -1,3 +1,8 @@
+### v1.2.5
+---
+* Updated .toc for 7.3.
+
+
 ### v1.2.4
 ---
 * Updated with future RCLootCouncil changes.

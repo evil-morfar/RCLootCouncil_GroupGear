@@ -1,8 +1,8 @@
 ## Author: Potdisc
-## Interface: 70200
+## Interface: 70300
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
 ## Title: RCLootCouncil - Group Gear
-## Version: 1.2.4
+## Version: 1.2.5
 ## Dependencies: RCLootCouncil
 
 core.lua
