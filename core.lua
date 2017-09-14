@@ -238,6 +238,13 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
          end
          f.gear[i]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
          f.gear[i]:SetScript("OnLeave", function() addon:HideTooltip() end)
+
+         f.gear[i].overlay = f.gear[i]:CreateTexture(nil, "OVERLAY")
+         f.gear[i].overlay:SetSize(ROW_HEIGHT, ROW_HEIGHT)
+         f.gear[i].overlay:SetPoint("CENTER",f.gear[i])
+         f.gear[i].overlay:SetColorTexture(1,0.1,0.1,0.5)
+         f.gear[i].overlay:Hide()
+
          f.gear[i].ilvl = f.gear[i]:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
          f.gear[i].ilvl:SetPoint("BOTTOM")
          f.gear[i].ilvl:SetWidth(25)
@@ -253,9 +260,98 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
       local _, _, quality, ilvl, _, _, _, _, _, texture = GetItemInfo(gear[i] or "")
       gearFrame:SetNormalTexture(texture)
+
       gearFrame.ilvl:SetText(ilvl)
       local r,g,b = GetItemQualityColor(quality or 1)
       gearFrame.ilvl:SetTextColor(r,g,b,1)
+      GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i)
    end
    frame.container:Show()
+end
+
+local socketsBonusIDs = {
+	[563]=true,
+	[564]=true,
+	[565]=true,
+	[572]=true,
+	[1808]=true,
+}
+local topEnchGems = {
+	[5427]="Ring:Crit:200",
+	[5428]="Ring:Haste:200",
+	[5429]="Ring:Mastery:200",
+	[5430]="Ring:Vers:200",
+
+	[5434]="Cloak:Str:200",
+	[5435]="Cloak:Agi:200",
+	[5436]="Cloak:Int:200",
+
+	[5467]="Cloak:Str:200",
+	[5468]="Cloak:Agi:200",
+	[5469]="Cloak:Int:200",
+
+	[5437]="Neck:",
+	[5438]="Neck:",
+	[5439]="Neck:",
+	[5889]="Neck:",
+	[5890]="Neck:",
+	[5891]="Neck:",
+
+	--[[
+	[5463]="Gem:Crit:150",
+	[5464]="Gem:Haste:150",
+	[5465]="Gem:Mastery:150",
+	[5466]="Gem:Vers:150",
+
+	[130219]="Gem:Crit:150",
+	[130220]="Gem:Haste:150",
+	[130222]="Gem:Mastery:150",
+	[130221]="Gem:Vers:150",
+	]]
+
+	[151580]="Gem:Crit:200",
+	[151583]="Gem:Haste:200",
+	[151584]="Gem:Mastery:200",
+	[151585]="Gem:Vers:200",
+
+	[130246]="Gem:Str:200",
+	[130247]="Gem:Agi:200",
+	[130248]="Gem:Int:200",
+}
+
+
+local function HasEnchant(item)
+   addon:Print("Stuff:", addon:DecodeItemLink(item))
+   local enchantID = select(4, addon:DecodeItemLink(item))
+   addon:Debug("EnchantID for", item, "is:", enchantID)
+   if not enchantID or enchantID == 0 or enchantID == "" then
+      -- TODO Check for real enchants
+      return true
+   end
+end
+
+local function GemCheck(item)
+   local _, _, _, _, gemID1, _, _, _, _, _, _,_, _, _, _, _, bonusIDs = addon:DecodeItemLink(item)
+   for _,id in ipairs(bonusIDs) do
+      if socketsBonusIDs[id] then -- There's a socket
+         if not gemID1 or gemID1 == 0 or gemID1 == "" then
+            -- TODO Check quality
+            return true
+         end
+      end
+   end
+end
+
+function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
+   if not item then return end
+   if not noGGCompensation and slotID >= 4 then slotID = slotID + 1 end -- Convert back to the "real" slotID's (we skipped the shirt; 4)
+   local colorize = false
+   -- Need enchants on: Neck, rings, cloak
+   if slotID == 2 or slotID == 11 or slotID == 12 or slotID == 15 then
+      colorize = HasEnchant(item) and true or colorize -- retain original value
+   end
+   -- Gem check
+   colorize = GemCheck(item) and true or colorize
+
+   if colorize then frame.overlay:Show() else frame.overlay:Hide() end
 end
