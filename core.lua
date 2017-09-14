@@ -168,10 +168,7 @@ function GroupGear:GetPlayersGear()
 end
 
 function GroupGear:IsPlayerRegistered(name)
-   name = name:lower()
-   for k in pairs(registeredPlayers) do
-      if k == name then return true end
-   end
+   return registeredPlayers[name:lower()] and true
 end
 
 function GroupGear:GetFrame()
