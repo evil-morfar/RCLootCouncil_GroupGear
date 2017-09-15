@@ -1,3 +1,7 @@
+### v1.3.0
+---
+* Gear icons now shows automatically once the data is available.
+
 ### v1.2.5
 ---
 * Updated .toc for 7.3.
