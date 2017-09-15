@@ -298,11 +298,6 @@ local topEnchGems = {
 	[5891]="Neck:",
 
 	--[[
-	[5463]="Gem:Crit:150",
-	[5464]="Gem:Haste:150",
-	[5465]="Gem:Mastery:150",
-	[5466]="Gem:Vers:150",
-
 	[130219]="Gem:Crit:150",
 	[130220]="Gem:Haste:150",
 	[130222]="Gem:Mastery:150",
@@ -321,9 +316,8 @@ local topEnchGems = {
 
 
 local function HasEnchant(item)
-   addon:Print("Stuff:", addon:DecodeItemLink(item))
    local enchantID = select(4, addon:DecodeItemLink(item))
-   addon:Debug("EnchantID for", item, "is:", enchantID)
+   --addon:Debug("EnchantID for", item, "is:", enchantID)
    if not enchantID or enchantID == 0 or enchantID == "" then
       -- TODO Check for real enchants
       return true
