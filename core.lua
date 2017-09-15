@@ -308,15 +308,12 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    end
    if not frame.container then frame.container = create() end
    if gear == nil then return frame.container:Hide() end -- Gear might not be received yet
-   addon:Debug("SetCellGear")
    -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
       local _, _, quality, ilvl, _, _, _, _, _, texture = GetItemInfo(gear[i] or "")
-      addon:Debug("Gear:",i,texture, GroupGear:TimeLeft(updateTimer))
       if (texture == nil or texture == "") and gear[i] then
          if GroupGear:TimeLeft(updateTimer) < 0.1 then -- Only 1 timer at a time (but it's usually not exactly 0 after a recent timer)
-            addon:Debug("Starting gg timer",i,texture)
             updateTimer = GroupGear:ScheduleTimer(GroupGear.Refresh, 2, GroupGear)
          end
       end
