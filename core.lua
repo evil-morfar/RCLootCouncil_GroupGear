@@ -16,16 +16,29 @@ local scrollCols = {
 --   { name = L["Rank"],  width = 95},                                              -- guild Rank
    { name = L["ilvl"],  width = 55,  align = "CENTER"},                             -- ilvl
    { name = "A. traits",width = 55,  align = "CENTER"},                             -- # of artifact traits
-   { name = "Gear",     width = ROW_HEIGHT * num_display_gear, align = "CENTER" },  -- Gear
+   { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER" },  -- Gear
    { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},     -- Refresh icon
 }
 
 
 local registeredPlayers = {} -- names are stored in lowercase for consistency
+local db, viewMenuFrame
 
 
 function GroupGear:OnInitialize()
    self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
+   local defaults = {
+      profile = {
+         showMissingGems = true,
+         showMissingEnchants = true,
+      },
+   }
+
+   self.db = LibStub("AceDB-3.0"):New("RCGroupGearDB", defaults, true)
+   db = self.db.profile
+
+   viewMenuFrame = CreateFrame("Frame", "RCLootCouncil_GroupGear_ViewMenu", UIParent, "Lib_UIDropDownMenuTemplate")
+   Lib_UIDropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
    -- register chat and comms
    self:Enable()
 end
@@ -121,7 +134,8 @@ function GroupGear:Refresh()
          num = num + 1
       end
    end
-   self.frame.avgilvl:SetText("Average ilvl: "..addon.round(ilvl/num, 2))
+   ilvl = addon.round(ilvl/num, 2)
+   self.frame.avgilvl:SetText(ilvl and "Average ilvl: "..ilvl or "")
 end
 
 function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
@@ -171,6 +185,28 @@ function GroupGear:IsPlayerRegistered(name)
    return registeredPlayers[name:lower()] and true
 end
 
+function GroupGear.ViewMenu(menu, level)
+   if level == 1 then
+      local info = Lib_UIDropDownMenu_CreateInfo()
+      info.text = "Options"
+      info.isTitle = true
+      info.notCheckable = true
+      info.disabled = true
+      Lib_UIDropDownMenu_AddButton(info, level)
+
+      info = Lib_UIDropDownMenu_CreateInfo()
+      info.text = "Highlight missing enchants"
+      info.checked = db.showMissingEnchants
+      info.func = function() db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh() end
+      Lib_UIDropDownMenu_AddButton(info, level)
+
+      info.text = "Highlight missing gems"
+      info.checked = db.showMissingGems
+      info.func = function() db.showMissingGems = not db.showMissingGems; GroupGear:Refresh() end
+      Lib_UIDropDownMenu_AddButton(info, level)
+   end
+end
+
 function GroupGear:GetFrame()
    if self.frame then return self.frame end
    local f = addon:CreateFrame("RCGroupGearFrame", "groupGear", "RCLootCouncil - Group Gear", 250)
@@ -196,8 +232,24 @@ function GroupGear:GetFrame()
    b3:SetScript("OnClick", function() self:Hide() end)
    f.closeButton = b3
 
+   local b4 = CreateFrame("Button", nil, f.content)
+   b4:SetSize(20,20)
+   b4:SetPoint("LEFT", b2, "RIGHT",8,0)
+   b4:SetNormalTexture("Interface/MINIMAP/TRACKING/None")
+   -- b4:SetBackdrop({
+   --    bgFile = "Interface/Minimap/UI-Minimap-Background",
+   --    --bgFile = "Interface/Minimap/Minimap-TrackingBorder",
+   -- })
+   b4:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
+   b4:SetScript("OnClick", function(self) Lib_ToggleDropDownMenu(1, nil, viewMenuFrame, self, 0, 0) end )
+   -- b4.border = b4:CreateTexture()
+   -- b4.border:SetTexture("Interface/Minimap/Minimap-TrackingBorder")
+   -- b4.border:SetSize(44,44)
+   -- b4.border:SetPoint("TOPLEFT", b4, "TOPLEFT", -4,4)
+   f.viewButton = b4
+
    local f1 = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
-   f1:SetPoint("LEFT", b2, "RIGHT", 10, 0)
+   f1:SetPoint("LEFT", b4, "RIGHT", 10, 0)
    f1:SetTextColor(1,1,1,1)
    f.avgilvl = f1
 
@@ -226,7 +278,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    local function create()
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
       f:SetPoint("LEFT", frame, "LEFT")
-      f:SetSize(ROW_HEIGHT * num_display_gear, ROW_HEIGHT)
+      f:SetSize(ROW_HEIGHT * num_display_gear + num_display_gear, ROW_HEIGHT)
       f.gear = {}
       -- Create the individual pieces' frame
       for i = 1, num_display_gear do
@@ -234,7 +286,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
          if i == 1 then
             f.gear[i]:SetPoint("LEFT", f, "LEFT",0,0)
          else
-            f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT",0,0)
+            f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT",1,0)
          end
          f.gear[i]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
          f.gear[i]:SetScript("OnLeave", function() addon:HideTooltip() end)
@@ -276,7 +328,7 @@ local socketsBonusIDs = {
 	[572]=true,
 	[1808]=true,
 }
-local topEnchGems = {
+local enchantsAndGems = {
 	[5427]="Ring:Crit:200",
 	[5428]="Ring:Haste:200",
 	[5429]="Ring:Mastery:200",
@@ -297,12 +349,10 @@ local topEnchGems = {
 	[5890]="Neck:",
 	[5891]="Neck:",
 
-	--[[
 	[130219]="Gem:Crit:150",
 	[130220]="Gem:Haste:150",
 	[130222]="Gem:Mastery:150",
 	[130221]="Gem:Vers:150",
-	]]
 
 	[151580]="Gem:Crit:200",
 	[151583]="Gem:Haste:200",
@@ -341,11 +391,11 @@ function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
    if not noGGCompensation and slotID >= 4 then slotID = slotID + 1 end -- Convert back to the "real" slotID's (we skipped the shirt; 4)
    local colorize = false
    -- Need enchants on: Neck, rings, cloak
-   if slotID == 2 or slotID == 11 or slotID == 12 or slotID == 15 then
+   if db.showMissingEnchants and (slotID == 2 or slotID == 11 or slotID == 12 or slotID == 15) then
       colorize = HasEnchant(item) and true or colorize -- retain original value
    end
    -- Gem check
-   colorize = GemCheck(item) and true or colorize
+   colorize = db.showMissingGems and GemCheck(item) and true or colorize
 
    if colorize then frame.overlay:Show() else frame.overlay:Hide() end
 end

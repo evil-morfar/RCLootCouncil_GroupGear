@@ -4,5 +4,6 @@
 ## Title: RCLootCouncil - Group Gear
 ## Version: 1.2.5
 ## Dependencies: RCLootCouncil
+## SavedVariables: RCGroupGearDB
 
 core.lua
