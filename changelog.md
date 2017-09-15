@@ -1,5 +1,9 @@
 ### v1.3.0
 ---
+* **Highlights**
+* You can now choose to highlight items that are missing enchants and gems.
+* It's enabled by default - click the hourglass icon to toggle.
+
 * Gear icons now shows automatically once the data is available.
 
 ### v1.2.5
