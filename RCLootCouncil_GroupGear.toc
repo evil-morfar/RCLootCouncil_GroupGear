@@ -7,3 +7,4 @@
 ## SavedVariables: RCGroupGearDB
 
 core.lua
+lists.lua

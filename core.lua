@@ -32,6 +32,8 @@ function GroupGear:OnInitialize()
       profile = {
          showMissingGems = true,
          showMissingEnchants = true,
+         showRareGems = false,
+         showRareEnchants = false,
       },
    }
 
@@ -201,9 +203,19 @@ function GroupGear.ViewMenu(menu, level)
       info.func = function() db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh() end
       Lib_UIDropDownMenu_AddButton(info, level)
 
+      info.text = "Highlight non-epic enchants"
+      info.checked = db.showRareEnchants
+      info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
+      Lib_UIDropDownMenu_AddButton(info, level)
+
       info.text = "Highlight missing gems"
       info.checked = db.showMissingGems
       info.func = function() db.showMissingGems = not db.showMissingGems; GroupGear:Refresh() end
+      Lib_UIDropDownMenu_AddButton(info, level)
+
+      info.text = "Highlight non-epic gems"
+      info.checked = db.showRareGems
+      info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
       Lib_UIDropDownMenu_AddButton(info, level)
    end
 end
@@ -327,69 +339,37 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    frame.container:Show()
 end
 
-local socketsBonusIDs = {
-	[563]=true,
-	[564]=true,
-	[565]=true,
-	[572]=true,
-	[1808]=true,
-}
-local enchantsAndGems = {
-	[5427]="Ring:Crit:200",
-	[5428]="Ring:Haste:200",
-	[5429]="Ring:Mastery:200",
-	[5430]="Ring:Vers:200",
-
-	[5434]="Cloak:Str:200",
-	[5435]="Cloak:Agi:200",
-	[5436]="Cloak:Int:200",
-
-	[5467]="Cloak:Str:200",
-	[5468]="Cloak:Agi:200",
-	[5469]="Cloak:Int:200",
-
-	[5437]="Neck:",
-	[5438]="Neck:",
-	[5439]="Neck:",
-	[5889]="Neck:",
-	[5890]="Neck:",
-	[5891]="Neck:",
-
-	[130219]="Gem:Crit:150",
-	[130220]="Gem:Haste:150",
-	[130222]="Gem:Mastery:150",
-	[130221]="Gem:Vers:150",
-
-	[151580]="Gem:Crit:200",
-	[151583]="Gem:Haste:200",
-	[151584]="Gem:Mastery:200",
-	[151585]="Gem:Vers:200",
-
-	[130246]="Gem:Str:200",
-	[130247]="Gem:Agi:200",
-	[130248]="Gem:Int:200",
-}
-
-
-local function HasEnchant(item)
-   local enchantID = select(4, addon:DecodeItemLink(item))
-   --addon:Debug("EnchantID for", item, "is:", enchantID)
-   if not enchantID or enchantID == 0 or enchantID == "" then
-      -- TODO Check for real enchants
-      return true
+function GroupGear:EnchantCheck(item)
+   --addon:Debug("EnchantCheck for", item)
+   if db.showMissingEnchants or db.showRareEnchants then
+      local enchantID = select(4, addon:DecodeItemLink(item))
+      if not enchantID or enchantID == 0 or enchantID == "" then
+         return true
+      elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
+         return true
+      elseif db.showMissingEnchants then
+         return not self.Lists.enchants[enchantID] == "epic"
+      end
    end
+   return false
 end
 
-local function GemCheck(item)
-   local _, _, _, _, gemID1, _, _, _, _, _, _,_, _, _, _, _, bonusIDs = addon:DecodeItemLink(item)
-   for _,id in ipairs(bonusIDs) do
-      if socketsBonusIDs[id] then -- There's a socket
-         if not gemID1 or gemID1 == 0 or gemID1 == "" then
-            -- TODO Check quality
-            return true
+function GroupGear:GemCheck(item)
+   if db.showMissingGems or db.showRareGems then
+      local _, _, _, _, gemID1, _, _, _, _, _, _,_, _, _, _, _, bonusIDs = addon:DecodeItemLink(item)
+      for _,id in ipairs(bonusIDs) do
+         if self.Lists.socketsBonusIDs[id] then -- There's a socket
+            if not gemID1 or gemID1 == 0 or gemID1 == "" then
+               return true
+            elseif db.showRareGems and self.Lists.gems[gemID1] == "rare" then
+               return true
+            elseif db.showMissingGems then
+               return not self.Lists.gems[gemID1] == "epic"
+            end
          end
       end
    end
+   return false
 end
 
 function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
@@ -397,11 +377,11 @@ function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
    if not noGGCompensation and slotID >= 4 then slotID = slotID + 1 end -- Convert back to the "real" slotID's (we skipped the shirt; 4)
    local colorize = false
    -- Need enchants on: Neck, rings, cloak
-   if db.showMissingEnchants and (slotID == 2 or slotID == 11 or slotID == 12 or slotID == 15) then
+   if self.Lists.enchantSlotIDs[slotID] then
       colorize = HasEnchant(item) and true or colorize -- retain original value
    end
    -- Gem check
-   colorize = db.showMissingGems and GemCheck(item) and true or colorize
+   colorize = GemCheck(item) and true or colorize
 
    if colorize then frame.overlay:Show() else frame.overlay:Hide() end
 end
