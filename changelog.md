@@ -6,6 +6,8 @@
 
 * Gear icons now shows automatically once the data is available.
 
+* *Sorting by gear now works as intended*
+
 ### v1.2.5
 ---
 * Updated .toc for 7.3.

@@ -77,23 +77,13 @@ function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
                addon:SendCommand("group", "groupGearResponse", self:GetGroupGearInfo())
             end
          elseif command == "groupGearResponse" then
-            local name, class, guildRank, ilvl, artifactTraits, gear = unpack(data)
-            if self:IsPlayerRegistered(name) then
-               -- Just readd them, as we have all the needed info
-               tremove(self.frame.rows, registeredPlayers[name:lower()])
-            end
-            self:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
+            self:AddEntry(unpack(data))
+            self:Update()
 
          elseif command == "playerInfo" then
-            -- We could receive this while we're not running, in which case we'll do nothing
-            if not self:IsShown() then return end
             local name, class, _, guildRank, _, _, ilvl = unpack(data)
-            if not self:IsPlayerRegistered(name) then -- just add them
-               self:AddEntry(name, class, guildRank, ilvl)
-            else
-               -- They're already registered, so we need to update the values
-               self:UpdateEntry(name, ilvl)
-            end
+            self:AddEntry(name, class, guildRank, ilvl)
+            self:Update()
          end
       end
    end
@@ -112,19 +102,49 @@ function GroupGear:IsShown()
    return self.frame and self.frame:IsVisible()
 end
 
+function GroupGear:QueryGroup()
+   if addon.candidates then -- just use this
+      for name, data in pairs(addon.candidates) do
+         self:AddEntry(name, data.class, data.rank, 0)
+      end
+   else -- Check the group
+      for i = 1, GetNumGroupMembers() do
+         local name, _, _, _, _, class = GetRaidRosterInfo(i)
+         local rank =  select(2, GetGuildInfo(name))
+         self:AddEntry(name, class, rank, 0)
+      end
+   end
+end
+
+function GroupGear:QueryGuild()
+   for i = 1, GetNumGuildMembers() do
+      local name, rank, _,_,_,_,_,_, online,_, class = GetGuildRosterInfo(i)
+      if online then
+         self:AddEntry(name, class, rank, 0)
+      end
+   end
+end
+
 function GroupGear:Query(method)
    self.frame.rows = {}
    registeredPlayers = {}
    -- Add our self
    self:AddEntry(self:GetGroupGearInfo())
    if method == "group" then
+      self:QueryGroup()
       addon:SendCommand("group", "playerInfoRequest")
       addon:SendCommand("group", "groupGearRequest")
    elseif method == "guild" then
+      self:QueryGuild()
       addon:SendCommand("guild", "playerInfoRequest")
       addon:SendCommand("guild", "groupGearRequest")
    end
    self.frame.st:SetData(self.frame.rows, true)
+end
+
+function GroupGear:Update()
+   -- Only update the display when we're showing
+   return self:IsShown() and self:Refresh()
 end
 
 function GroupGear:Refresh()
@@ -142,27 +162,25 @@ function GroupGear:Refresh()
 end
 
 function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
-   tinsert(self.frame.rows, {
-      {args = {class} },
-      {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-   --   {value = guildRank or "Unknown"},
-      {value = addon.round(ilvl,2)},
-      {value = artifactTraits or "Unknown"},
-      {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
-      {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
-   })
-   registeredPlayers[name:lower()] = #self.frame.rows
-   self:Refresh()
-end
-
-function GroupGear:UpdateEntry(name, ilvl)
-   -- We'll assume it's only when player's doesn't have GG installed that updates occur,
-   -- so only update ilvl
-   -- Find out which row they're at
-   local row = registeredPlayers[name:lower()]
-   -- And edit the value if we have the data, otherwise keep what we have
-   self.frame.rows[row][3].value = ilvl and addon.round(ilvl,2) or self.frame.rows[row][3].value
-   self.frame.st:Refresh()
+   if self:IsPlayerRegistered(name) then -- Update
+      local row = registeredPlayers[name:lower()]
+      if ilvl and ilvl ~= 0 then self.frame.rows[row][3].value = addon.round(ilvl,2) end
+      if artifactTraits then     self.frame.rows[row][4].value = artifactTraits or "Unknown" end
+      if gear and #gear > 0 then self.frame.rows[row][5].gear = gear end
+      addon:Debug("GG:AddEntry(Update)", name, row)
+   else
+      tinsert(self.frame.rows, {
+         {args = {class} },
+         {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
+      --   {value = guildRank or "Unknown"},
+         {value = addon.round(ilvl,2)},
+         {value = artifactTraits or "Unknown"},
+         {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
+         {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
+      })
+      addon:Debug("GG:AddEntry", name, #self.frame.rows)
+      registeredPlayers[name:lower()] = #self.frame.rows
+   end
 end
 
 -- Function to return everything needed by GroupGear to the requester
@@ -319,7 +337,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       return f
    end
    if not frame.container then frame.container = create() end
-   if gear == nil then return frame.container:Hide() end -- Gear might not be received yet
+   if gear == nil then data[realrow][column].value = "0"; return frame.container:Hide() end -- Gear might not be received yet
    -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
@@ -336,6 +354,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       gearFrame.ilvl:SetTextColor(r,g,b,1)
       GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i)
    end
+   data[realrow][column].value = "1"
    frame.container:Show()
 end
 
@@ -378,10 +397,10 @@ function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
    local colorize = false
    -- Need enchants on: Neck, rings, cloak
    if self.Lists.enchantSlotIDs[slotID] then
-      colorize = HasEnchant(item) and true or colorize -- retain original value
+      colorize = self:EnchantCheck(item) and true or colorize -- retain original value
    end
    -- Gem check
-   colorize = GemCheck(item) and true or colorize
+   colorize = self:GemCheck(item) and true or colorize
 
    if colorize then frame.overlay:Show() else frame.overlay:Hide() end
 end
