@@ -348,7 +348,7 @@ function GroupGear:EnchantCheck(item)
       elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
          return true
       elseif db.showMissingEnchants then
-         return not self.Lists.enchants[enchantID] == "epic"
+         return not self.Lists.enchants[enchantID]
       end
    end
    return false
@@ -364,7 +364,7 @@ function GroupGear:GemCheck(item)
             elseif db.showRareGems and self.Lists.gems[gemID1] == "rare" then
                return true
             elseif db.showMissingGems then
-               return not self.Lists.gems[gemID1] == "epic"
+               return not self.Lists.gems[gemID1]
             end
          end
       end
