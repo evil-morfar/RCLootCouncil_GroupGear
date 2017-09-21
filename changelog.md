@@ -7,6 +7,7 @@
 * Gear icons now shows automatically once the data is available.
 
 * *Sorting by gear now works as intended*
+* *Average ilvl no longer includes people without data.*
 
 ### v1.2.5
 ---

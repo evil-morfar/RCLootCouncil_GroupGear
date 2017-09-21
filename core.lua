@@ -147,17 +147,21 @@ function GroupGear:Update()
    return self:IsShown() and self:Refresh()
 end
 
-function GroupGear:Refresh()
-   self.frame.st:SortData()
-   -- Calculate total ilvl
+function GroupGear:GetAverageItemLevel()
    local ilvl, num = 0, 0
    for i = 1, #self.frame.rows do
-      if self.frame.rows[i][3].value ~= "Unknown" then
+      if self.frame.rows[i][3].value ~= 0 then
          ilvl = ilvl + self.frame.rows[i][3].value
          num = num + 1
       end
    end
-   ilvl = addon.round(ilvl/num, 2)
+   return addon.round(ilvl/num, 2)
+end
+
+function GroupGear:Refresh()
+   self.frame.st:SortData()
+   -- Calculate total ilvl
+   local ilvl = self:GetAverageItemLevel()
    self.frame.avgilvl:SetText(ilvl and "Average ilvl: "..ilvl or "")
 end
 
