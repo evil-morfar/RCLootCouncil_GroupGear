@@ -11,13 +11,13 @@ local ROW_HEIGHT = 20
 local num_display_gear = 16
 
 local scrollCols = {
-   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},       -- class icon
-   { name = L["Name"],  width = 120},                                               -- Player name
---   { name = L["Rank"],  width = 95},                                              -- guild Rank
-   { name = L["ilvl"],  width = 55,  align = "CENTER"},                             -- ilvl
-   { name = "A. traits",width = 55,  align = "CENTER"},                             -- # of artifact traits
+   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                          -- class icon
+   { name = L["Name"],  width = 120},                                                                  -- Player name
+--   { name = L["Rank"],  width = 95},                                                                 -- guild Rank
+   { name = L["ilvl"],  width = 55,  align = "CENTER", DoCellUpdate = GroupGear.SelCellIlvl},          -- ilvl
+   { name = "A. traits",width = 55,  align = "CENTER"},                                                -- # of artifact traits
    { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER" },  -- Gear
-   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},     -- Refresh icon
+   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                        -- Refresh icon
 }
 
 
@@ -105,13 +105,13 @@ end
 function GroupGear:QueryGroup()
    if addon.candidates then -- just use this
       for name, data in pairs(addon.candidates) do
-         self:AddEntry(name, data.class, data.rank, 0)
+         self:AddEntry(name, data.class, data.rank)
       end
    else -- Check the group
       for i = 1, GetNumGroupMembers() do
          local name, _, _, _, _, class = GetRaidRosterInfo(i)
          local rank =  select(2, GetGuildInfo(name))
-         self:AddEntry(name, class, rank, 0)
+         self:AddEntry(name, class, rank)
       end
    end
 end
@@ -120,7 +120,7 @@ function GroupGear:QueryGuild()
    for i = 1, GetNumGuildMembers() do
       local name, rank, _,_,_,_,_,_, online,_, class = GetGuildRosterInfo(i)
       if online then
-         self:AddEntry(name, class, rank, 0)
+         self:AddEntry(name, class, rank)
       end
    end
 end
@@ -173,7 +173,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
          {args = {class} },
          {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
       --   {value = guildRank or "Unknown"},
-         {value = addon.round(ilvl,2)},
+         {value = ilvl and addon.round(ilvl,2) or 0},
          {value = artifactTraits or "Unknown"},
          {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
          {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
@@ -287,6 +287,12 @@ function GroupGear:GetFrame()
    return f
 end
 
+function GroupGear.SetCellIlvl(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+   local ilvl = data[realrow][column].value
+   ilvl = ilvl == 0 and "-" or ilvl
+   frame.text:SetText(ilvl)
+end
+
 function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local name = data[realrow][column].name
    local f = frame.btn or CreateFrame("Button", nil, frame)
@@ -307,6 +313,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    local gear = data[realrow][column].gear
    -- Function to create a frame containing the x num of gear frames
    local function create()
+      frame.text:SetTextColor(.75,.75,.75,1)
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
       f:SetPoint("LEFT", frame, "LEFT")
       f:SetSize(ROW_HEIGHT * num_display_gear + num_display_gear, ROW_HEIGHT)
@@ -337,7 +344,15 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       return f
    end
    if not frame.container then frame.container = create() end
-   if gear == nil then data[realrow][column].value = "0"; return frame.container:Hide() end -- Gear might not be received yet
+   if gear == nil then -- Gear might not be received yet
+      if data[realrow][3].value == 0 then -- no ilvl either = no RCLootCouncil
+         frame.text:SetText("No RCLootCouncil")
+      else -- No GroupGear
+         frame.text:SetText("No GroupGear")
+      end
+      data[realrow][column].value = "0";
+      return frame.container:Hide()
+   end
    -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
@@ -354,6 +369,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       gearFrame.ilvl:SetTextColor(r,g,b,1)
       GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i)
    end
+   frame.text:SetText("")
    data[realrow][column].value = "1"
    frame.container:Show()
 end
@@ -376,16 +392,20 @@ end
 function GroupGear:GemCheck(item)
    if db.showMissingGems or db.showRareGems then
       local _, _, _, _, gemID1, _, _, _, _, _, _,_, _, _, _, _, bonusIDs = addon:DecodeItemLink(item)
+      if gemID1 == 0 or gemID1 == "" then gemID1 = false end
+      -- check if we should have a gem:
       for _,id in ipairs(bonusIDs) do
          if self.Lists.socketsBonusIDs[id] then -- There's a socket
-            if not gemID1 or gemID1 == 0 or gemID1 == "" then
+            if not gemID1 then
                return true
-            elseif db.showRareGems and self.Lists.gems[gemID1] == "rare" then
-               return true
-            elseif db.showMissingGems then
-               return not self.Lists.gems[gemID1]
             end
          end
+      end
+      -- Now see if we have a gem, and it's valid
+      if gemID1 and db.showRareGems and self.Lists.gems[gemID1] == "rare" then
+         return true
+      elseif gemID1 then
+         return not self.Lists.gems[gemID1]
       end
    end
    return false
@@ -395,12 +415,14 @@ function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
    if not item then return end
    if not noGGCompensation and slotID >= 4 then slotID = slotID + 1 end -- Convert back to the "real" slotID's (we skipped the shirt; 4)
    local colorize = false
-   -- Need enchants on: Neck, rings, cloak
-   if self.Lists.enchantSlotIDs[slotID] then
-      colorize = self:EnchantCheck(item) and true or colorize -- retain original value
+   if not (slotID == 16 or slotID == 17) then -- Ignore artifacts
+      -- Need enchants on: Neck, rings, cloak
+      if self.Lists.enchantSlotIDs[slotID] then
+         colorize = self:EnchantCheck(item) and true or colorize -- retain original value
+      end
+      -- Gem check
+      colorize = self:GemCheck(item) and true or colorize
    end
-   -- Gem check
-   colorize = self:GemCheck(item) and true or colorize
 
    if colorize then frame.overlay:Show() else frame.overlay:Hide() end
 end
