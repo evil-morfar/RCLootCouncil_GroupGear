@@ -16,7 +16,7 @@ local scrollCols = {
 --   { name = L["Rank"],  width = 95},                                                                 -- guild Rank
    { name = L["ilvl"],  width = 55,  align = "CENTER"},                                                -- ilvl
    { name = "A. traits",width = 55,  align = "CENTER"},                                                -- # of artifact traits
-   { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER" },  -- Gear
+   { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },   -- Gear
    { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                        -- Refresh icon
 }
 
@@ -159,6 +159,7 @@ function GroupGear:GetAverageItemLevel()
 end
 
 function GroupGear:Refresh()
+   self.frame.st.cols[5].sort = "asc" -- Sort by gear
    self.frame.st:SortData()
    -- Calculate total ilvl
    local ilvl = self:GetAverageItemLevel()
@@ -177,7 +178,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
          {args = {class} },
          {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
       --   {value = guildRank or "Unknown"},
-         {value = ilvl and addon.round(ilvl,2) or 0, DoCellUpdate = GroupGear.SelCellIlvl},
+         {value = ilvl and addon.round(ilvl,2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
          {value = artifactTraits or "Unknown"},
          {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
          {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
