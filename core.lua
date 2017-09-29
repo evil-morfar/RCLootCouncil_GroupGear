@@ -15,7 +15,7 @@ local scrollCols = {
    { name = L["Name"],  width = 120},                                                                  -- Player name
 --   { name = L["Rank"],  width = 95},                                                                 -- guild Rank
    { name = L["ilvl"],  width = 55,  align = "CENTER"},                                                -- ilvl
-   { name = "A. traits",width = 55,  align = "CENTER"},                                                -- # of artifact traits
+   { name = "A. traits",width = 60,  align = "CENTER"},                                                -- # of artifact traits
    { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },   -- Gear
    { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                        -- Refresh icon
 }
@@ -103,7 +103,7 @@ function GroupGear:IsShown()
 end
 
 function GroupGear:QueryGroup()
-   if addon.candidates then -- just use this
+   if addon.candidates and addon.candidates[addon.playerName] then -- just use this
       for name, data in pairs(addon.candidates) do
          self:AddEntry(name, data.class, data.rank)
       end

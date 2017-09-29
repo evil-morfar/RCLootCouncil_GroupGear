@@ -1,3 +1,7 @@
+### v1.3.1
+---
+* Made artifact trait column a bit wider to compensate for the scaling changes in RCLootCouncil.
+
 ### v1.3.0
 ---
 * **Highlights**
