@@ -48,11 +48,11 @@ end
 
 function GroupGear:OnEnable()
    addon:Debug("GroupGear", self.version, "enabled")
-   -- This changes in rclc v2.5
-if addon:VersionCompare(addon.version, "2.5.0") then
-   addon:CustomChatCmd(self, "Show", "gg", "groupgear", "gear")
-else
+   -- This changes in rclc v2.7.6
+if addon:VersionCompare(addon.version, "2.7.6") then
    addon:CustomChatCmd(self, "Show", "- gg - Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
+else
+   addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
 end
    self:RegisterComm("RCLootCouncil")
    self.frame = self:GetFrame()

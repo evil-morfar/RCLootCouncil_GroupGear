@@ -1,3 +1,8 @@
+### v1.3.2
+---
+* Updated to use new chat command format in RCLootCouncil v2.7.6.
+
+
 ### v1.3.1
 ---
 * Made artifact trait column a bit wider to compensate for the scaling changes in RCLootCouncil.
