@@ -1,3 +1,8 @@
+### v1.4.0
+---
+* Updated toc for patch 8.0.
+
+
 ### v1.3.2
 ---
 * Updated to use new chat command format in RCLootCouncil v2.7.6.
