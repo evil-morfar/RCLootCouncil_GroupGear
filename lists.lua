@@ -4,6 +4,7 @@ local GG = addon:GetModule("RCGroupGear")
 
 GG.Lists = {
    gems = {
+      --[[ Legion
       [130219] = "rare", --Gem:Crit:150
    	[130220] = "rare", --Gem:Haste:150
    	[130222] = "rare", --Gem:Mastery:150
@@ -17,8 +18,19 @@ GG.Lists = {
    	[130246] = "epic", --Gem:Str:200
    	[130247] = "epic", --Gem:Agi:200
    	[130248] = "epic", --Gem:Int:200
+]]
+-- Battle for Azeroth
+      [154126] = "rare", --Gem:Crit:40
+      [154127] = "rare", --Gem:Haste:40
+      [154128] = "rare", --Gem:Vers:40
+      [154129] = "rare", --Gem:Mastery:40
+
+      [153707] = "epic", --Gem:Str:40
+      [153708] = "epic", --Gem:Agi:40
+      [153709] = "epic", --Gem:Int:40
    },
    enchants = {
+      --[[ Legion
       [5423] = "rare", --Ring:Crit:150
       [5424] = "rare", --Ring:Haste:150
       [5425] = "rare", --Ring:Mastery:150
@@ -52,6 +64,29 @@ GG.Lists = {
       [5896] = "rare", --Neck:Vers:200
       [5897] = "rare", --Neck:Haste:200
       [5898] = "rare", --Neck:Crit:200
+      ]]
+
+      -- BFA
+      [5938] = "rare", --Ring:Crit:27
+      [5939] = "rare", --Ring:Haste:27
+      [5940] = "rare", --Ring:Mastery:27
+      [5941] = "rare", --Ring:Vers:27
+
+      [5942] = "epic", --Ring:Crit:37
+      [5943] = "epic", --Ring:Haste:37
+      [5944] = "epic", --Ring:Mastery:37
+      [5945] = "epic", --Ring:Vers:37
+
+      [5946] = "epic", --Weapon:CoastalSurge
+      [5948] = "epic", --Weapon:Siphoning
+      [5949] = "epic", --Weapon:TorrentOfElements
+      [5950] = "epic", --Weapon:GaleForceStriking
+
+      [5962] = "epic", --Weapon:VersitileNavigation
+      [5963] = "epic", --Weapon:QuickNavigation
+      [5964] = "epic", --Weapon:MasterfulNavigation
+      [5965] = "epic", --Weapon:DeadlyNavigation
+      [5966] = "epic", --Weapon:StalwartNavigation
    },
    socketsBonusIDs = {
       [563] =  true,
@@ -60,10 +95,9 @@ GG.Lists = {
       [572] =  true,
       [1808] = true,
    },
-   enchantSlotIDs = { -- Legion has enchants on: Neck, rings, cloak
-      [2]  = true,
+   enchantSlotIDs = { -- BfA has enchants on: rings, weapon
       [11] = true,
       [12] = true,
-      [15] = true,
+      [16] = true,
    },
 }

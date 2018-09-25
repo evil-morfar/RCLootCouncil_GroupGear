@@ -191,7 +191,12 @@ end
 -- Function to return everything needed by GroupGear to the requester
 function GroupGear:GetGroupGearInfo()
    local name, class, _, guildRank, _, _, ilvl = addon:GetPlayerInfo()
-   return name, class, guildRank, ilvl, select(6,C_ArtifactUI.GetEquippedArtifactInfo()), self:GetPlayersGear()
+   local hoaLocation = _G.C_AzeriteItem.FindActiveAzeriteItem()
+   local hoalvl = 0
+   if hoaLocation then
+      hoalvl = C_AzeriteItem.GetPowerLevel(hoaLocation)
+   end
+   return name, class, guildRank, ilvl, hoalvl, self:GetPlayersGear()
 end
 
 -- Returns a table containing the itemStrings of the player's gear
@@ -420,14 +425,12 @@ function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
    if not item then return end
    if not noGGCompensation and slotID >= 4 then slotID = slotID + 1 end -- Convert back to the "real" slotID's (we skipped the shirt; 4)
    local colorize = false
-   if not (slotID == 16 or slotID == 17) then -- Ignore artifacts
-      -- Need enchants on: Neck, rings, cloak
-      if self.Lists.enchantSlotIDs[slotID] then
-         colorize = self:EnchantCheck(item) and true or colorize -- retain original value
-      end
-      -- Gem check
-      colorize = self:GemCheck(item) and true or colorize
+   -- Need enchants on: Rings, weapons
+   if self.Lists.enchantSlotIDs[slotID] then
+      colorize = self:EnchantCheck(item) and true or colorize -- retain original value
    end
+   -- Gem check
+   colorize = self:GemCheck(item) and true or colorize
 
    if colorize then frame.overlay:Show() else frame.overlay:Hide() end
 end

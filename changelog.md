@@ -1,3 +1,8 @@
+### v1.5.0
+---
+* Updated with Battle for Azeroth gems and enchants.
+* Updates to show Heart of Azeroth level instead of number of Artifact Traits.
+
 ### v1.4.0
 ---
 * Updated toc for patch 8.0.
