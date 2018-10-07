@@ -1,3 +1,8 @@
+### v1.5.1
+---
+* *Updated to work with RCLootCouncil v2.9.2.*
+
+
 ### v1.5.0
 ---
 * Updated with Battle for Azeroth gems and enchants.

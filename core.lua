@@ -40,8 +40,8 @@ function GroupGear:OnInitialize()
    self.db = LibStub("AceDB-3.0"):New("RCGroupGearDB", defaults, true)
    db = self.db.profile
 
-   viewMenuFrame = CreateFrame("Frame", "RCLootCouncil_GroupGear_ViewMenu", UIParent, "Lib_UIDropDownMenuTemplate")
-   Lib_UIDropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
+   viewMenuFrame = CreateFrame("Frame", "RCLootCouncil_GroupGear_ViewMenu", UIParent, "L_UIDropDownMenuTemplate")
+   L_UIDropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
    -- register chat and comms
    self:Enable()
 end
@@ -218,33 +218,33 @@ end
 
 function GroupGear.ViewMenu(menu, level)
    if level == 1 then
-      local info = Lib_UIDropDownMenu_CreateInfo()
+      local info = L_UIDropDownMenu_CreateInfo()
       info.text = "Options"
       info.isTitle = true
       info.notCheckable = true
       info.disabled = true
-      Lib_UIDropDownMenu_AddButton(info, level)
+      L_UIDropDownMenu_AddButton(info, level)
 
-      info = Lib_UIDropDownMenu_CreateInfo()
+      info = L_UIDropDownMenu_CreateInfo()
       info.text = "Highlight missing enchants"
       info.checked = db.showMissingEnchants
       info.func = function() db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh() end
-      Lib_UIDropDownMenu_AddButton(info, level)
+      L_UIDropDownMenu_AddButton(info, level)
 
       info.text = "Highlight non-epic enchants"
       info.checked = db.showRareEnchants
       info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
-      Lib_UIDropDownMenu_AddButton(info, level)
+      L_UIDropDownMenu_AddButton(info, level)
 
       info.text = "Highlight missing gems"
       info.checked = db.showMissingGems
       info.func = function() db.showMissingGems = not db.showMissingGems; GroupGear:Refresh() end
-      Lib_UIDropDownMenu_AddButton(info, level)
+      L_UIDropDownMenu_AddButton(info, level)
 
       info.text = "Highlight non-epic gems"
       info.checked = db.showRareGems
       info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
-      Lib_UIDropDownMenu_AddButton(info, level)
+      L_UIDropDownMenu_AddButton(info, level)
    end
 end
 
@@ -282,7 +282,7 @@ function GroupGear:GetFrame()
    --    --bgFile = "Interface/Minimap/Minimap-TrackingBorder",
    -- })
    b4:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-   b4:SetScript("OnClick", function(self) Lib_ToggleDropDownMenu(1, nil, viewMenuFrame, self, 0, 0) end )
+   b4:SetScript("OnClick", function(self) L_ToggleDropDownMenu(1, nil, viewMenuFrame, self, 0, 0) end )
    -- b4.border = b4:CreateTexture()
    -- b4.border:SetTexture("Interface/Minimap/Minimap-TrackingBorder")
    -- b4.border:SetSize(44,44)
