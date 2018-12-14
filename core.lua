@@ -40,8 +40,8 @@ function GroupGear:OnInitialize()
    self.db = LibStub("AceDB-3.0"):New("RCGroupGearDB", defaults, true)
    db = self.db.profile
 
-   viewMenuFrame = CreateFrame("Frame", "RCLootCouncil_GroupGear_ViewMenu", UIParent, "L_UIDropDownMenuTemplate")
-   L_UIDropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
+   viewMenuFrame = _G.MSA_DropDownMenu_Create("RCLootCouncil_GroupGear_ViewMenu", UIParent)
+   _G.MSA_DropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
    -- register chat and comms
    self:Enable()
 end
@@ -218,33 +218,33 @@ end
 
 function GroupGear.ViewMenu(menu, level)
    if level == 1 then
-      local info = L_UIDropDownMenu_CreateInfo()
+      local info = MSA_DropDownMenu_CreateInfo()
       info.text = "Options"
       info.isTitle = true
       info.notCheckable = true
       info.disabled = true
-      L_UIDropDownMenu_AddButton(info, level)
+      MSA_DropDownMenu_AddButton(info, level)
 
-      info = L_UIDropDownMenu_CreateInfo()
+      info = MSA_DropDownMenu_CreateInfo()
       info.text = "Highlight missing enchants"
       info.checked = db.showMissingEnchants
       info.func = function() db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh() end
-      L_UIDropDownMenu_AddButton(info, level)
+      MSA_DropDownMenu_AddButton(info, level)
 
       info.text = "Highlight non-epic enchants"
       info.checked = db.showRareEnchants
       info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
-      L_UIDropDownMenu_AddButton(info, level)
+      MSA_DropDownMenu_AddButton(info, level)
 
       info.text = "Highlight missing gems"
       info.checked = db.showMissingGems
       info.func = function() db.showMissingGems = not db.showMissingGems; GroupGear:Refresh() end
-      L_UIDropDownMenu_AddButton(info, level)
+      MSA_DropDownMenu_AddButton(info, level)
 
       info.text = "Highlight non-epic gems"
       info.checked = db.showRareGems
       info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
-      L_UIDropDownMenu_AddButton(info, level)
+      MSA_DropDownMenu_AddButton(info, level)
    end
 end
 

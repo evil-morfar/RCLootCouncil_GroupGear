@@ -1,3 +1,8 @@
+### v1.5.2
+---
+* *Updated DropDownMenu's to work with the new library in RCLootCouncil.*
+
+
 ### v1.5.1
 ---
 * *Updated to work with RCLootCouncil v2.9.2.*
