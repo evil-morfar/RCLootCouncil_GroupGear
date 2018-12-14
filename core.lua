@@ -282,7 +282,7 @@ function GroupGear:GetFrame()
    --    --bgFile = "Interface/Minimap/Minimap-TrackingBorder",
    -- })
    b4:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-   b4:SetScript("OnClick", function(self) L_ToggleDropDownMenu(1, nil, viewMenuFrame, self, 0, 0) end )
+   b4:SetScript("OnClick", function(self) MSA_ToggleDropDownMenu(1, nil, viewMenuFrame, self, 0, 0) end )
    -- b4.border = b4:CreateTexture()
    -- b4.border:SetTexture("Interface/Minimap/Minimap-TrackingBorder")
    -- b4.border:SetSize(44,44)
