@@ -1,3 +1,8 @@
+### v1.6.0
+---
+* Updated for patch 8.2.
+
+
 ### v1.5.2
 ---
 * *Updated DropDownMenu's to work with the new library in RCLootCouncil.*
