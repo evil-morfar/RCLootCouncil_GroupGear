@@ -1,3 +1,9 @@
+### v1.6.1
+---
+* Added patch 8.2 gems and enchants to checker.
+* All older gems/enchants have been moved to the "non-epic" list, regardless of their previous quality.
+
+
 ### v1.6.0
 ---
 * Updated for patch 8.2.

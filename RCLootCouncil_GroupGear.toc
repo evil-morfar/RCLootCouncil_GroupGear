@@ -2,7 +2,7 @@
 ## Interface: 80200
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
 ## Title: RCLootCouncil - Group Gear
-## Version: 1.6.0
+## Version: 1.6.1
 ## Dependencies: RCLootCouncil
 ## SavedVariables: RCGroupGearDB
 
