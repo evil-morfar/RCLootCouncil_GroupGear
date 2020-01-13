@@ -16,6 +16,6 @@ targets:
          - "-p"
    Classic:
       name: "Deploy Classic"
-      cmd: "sh .scripts/deloy.sh"
+      cmd: "sh .scripts/deploy.sh"
       args:
          - "-c"
