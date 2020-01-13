@@ -141,6 +141,9 @@ end
 function GroupGear:Query(method)
    self.frame.rows = {}
    registeredPlayers = {}
+   -- Add our self
+   self:AddEntry(self:GetGroupGearInfo())
+   self:AddCorruptionData(addon.playerName, addon:GetPlayerCorruption())
    self:QueryGroup()
    if method == "group" then
       self:SendQueryRequests(method)
@@ -200,6 +203,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
 end
 
 function GroupGear:AddCorruptionData (name, corruptionData)
+   if not _G.CORRUPTION_COLOR then return end -- Sanity for if it's removed
    name = addon:UnitName(name) -- Might need to restore realm
    local corruption, corruptionResistance = unpack(corruptionData)
    local totalCorruption = math.max(corruption - corruptionResistance, 0);
