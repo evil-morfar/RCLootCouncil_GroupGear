@@ -2,6 +2,7 @@
 ---
 * Updated for patch 8.3.0
 * Added Corruption as a column, mirroring the VotingFrame addition from RCLootCouncil v2.17.0.
+* Opening the GroupGear frame now shows the player's information by default.
 
 ### v1.6.1
 ---

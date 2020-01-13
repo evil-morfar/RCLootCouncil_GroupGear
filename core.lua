@@ -94,6 +94,10 @@ end
 
 function GroupGear:Show()
    self.frame = self:GetFrame()
+   -- Add our self
+   self:AddEntry(self:GetGroupGearInfo())
+   self:AddCorruptionData(addon.playerName, addon:GetPlayerCorruption())
+   self.frame.st:SetData(self.frame.rows, true)
    self.frame:Show()
 end
 
@@ -137,9 +141,6 @@ end
 function GroupGear:Query(method)
    self.frame.rows = {}
    registeredPlayers = {}
-   -- Add our self
-   self:AddEntry(self:GetGroupGearInfo())
-   self:AddCorruptionData(addon.playerName, addon:GetPlayerCorruption())
    self:QueryGroup()
    if method == "group" then
       self:SendQueryRequests(method)
