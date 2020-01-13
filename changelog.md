@@ -1,3 +1,8 @@
+### v1.7.0
+---
+* Updated for patch 8.3.0
+* Added Corruption as a column, mirroring the VotingFrame addition from RCLootCouncil v2.17.0.
+
 ### v1.6.1
 ---
 * Added patch 8.2 gems and enchants to checker.

@@ -11,13 +11,13 @@ local ROW_HEIGHT = 20
 local num_display_gear = 16
 
 local scrollCols = {
-   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                          -- class icon
-   { name = _G.NAME,  width = 120},                                                                  -- Player name
---   { name = L["Rank"],  width = 95},                                                                 -- guild Rank
-   { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                -- ilvl
-   { name = "A. traits",width = 60,  align = "CENTER"},                                                -- # of artifact traits
-   { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },   -- Gear
-   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                        -- Refresh icon
+   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
+   { name = _G.NAME,  width = 120},                                                                                   -- Player name
+   { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
+   { name = "A. traits",width = 60,  align = "CENTER"},                                                               -- # of artifact traits
+   { name = "",         width = 30, align = "CENTER" },                                                              -- Corruption (Patch 8.3)
+   { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
+   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
 }
 
 
@@ -68,7 +68,6 @@ function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
       -- data is always a table to be unpacked
       local test, command, data = addon:Deserialize(serializedMsg)
       if addon:HandleXRealmComms(self, command, data, sender) then return end
-
       if test then
          if command == "groupGearRequest" then
             if distri == "GUILD" then
@@ -83,6 +82,10 @@ function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
          elseif command == "playerInfo" then
             local name, class, _, guildRank, _, _, ilvl = unpack(data)
             self:AddEntry(name, class, guildRank, ilvl)
+            self:Update()
+
+         elseif command == "corruptionData" then
+            self:AddCorruptionData(sender, unpack(data))
             self:Update()
          end
       end
@@ -125,19 +128,23 @@ function GroupGear:QueryGuild()
    end
 end
 
+function GroupGear:SendQueryRequests (target)
+   addon:SendCommand(target, "playerInfoRequest")
+   addon:SendCommand(target, "groupGearRequest")
+   addon:SendCommand(target, "getCorruptionData")
+end
+
 function GroupGear:Query(method)
    self.frame.rows = {}
    registeredPlayers = {}
    -- Add our self
    self:AddEntry(self:GetGroupGearInfo())
+   self:AddCorruptionData(addon.playerName, addon:GetPlayerCorruption())
+   self:QueryGroup()
    if method == "group" then
-      self:QueryGroup()
-      addon:SendCommand("group", "playerInfoRequest")
-      addon:SendCommand("group", "groupGearRequest")
+      self:SendQueryRequests(method)
    elseif method == "guild" then
-      self:QueryGuild()
-      addon:SendCommand("guild", "playerInfoRequest")
-      addon:SendCommand("guild", "groupGearRequest")
+      self:SendQueryRequests(method)
    end
    self.frame.st:SetData(self.frame.rows, true)
 end
@@ -171,7 +178,7 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
       local row = registeredPlayers[name:lower()]
       if ilvl and ilvl ~= 0 then self.frame.rows[row][3].value = addon.round(ilvl,2) end
       if artifactTraits then     self.frame.rows[row][4].value = artifactTraits or "Unknown" end
-      if gear and #gear > 0 then self.frame.rows[row][5].gear = gear end
+      if gear and #gear > 0 then self.frame.rows[row][6].gear = gear end
       addon:Debug("GG:AddEntry(Update)", name, row)
    else
       tinsert(self.frame.rows, {
@@ -180,12 +187,29 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
       --   {value = guildRank or "Unknown"},
          {value = ilvl and addon.round(ilvl,2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
          {value = artifactTraits or "Unknown"},
+         {value = "", DoCellUpdate = GroupGear.SetCellCorruption, corruptionData = {}},
          {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
          {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
       })
-      addon:Debug("GG:AddEntry", name, #self.frame.rows)
-      registeredPlayers[name:lower()] = #self.frame.rows
+      local index = #self.frame.rows
+      self.frame.rows[index].name = name
+      addon:Debug("GG:AddEntry", name, index)
+      registeredPlayers[name:lower()] = index
    end
+end
+
+function GroupGear:AddCorruptionData (name, corruptionData)
+   name = addon:UnitName(name) -- Might need to restore realm
+   local corruption, corruptionResistance = unpack(corruptionData)
+   local totalCorruption = math.max(corruption - corruptionResistance, 0);
+   local row = registeredPlayers[name:lower()]
+   if not row then return error(format("Got corruptionData for %s before row exists", name)) end -- Not created yet. TODO Consider a queue system.
+   self.frame.rows[row][5].corruptionData = {
+      corruption = corruption,
+      corruptionResistance = corruptionResistance,
+      totalCorruption = totalCorruption
+   }
+   print(format("Done corruption %d for %s", totalCorruption, name))
 end
 
 -- Function to return everything needed by GroupGear to the requester
@@ -257,6 +281,12 @@ function GroupGear:GetFrame()
 	f:SetWidth(st.frame:GetWidth()+20)
    f.rows = {}
 	f.st = st
+   if _G.CORRUPTION_COLOR then
+      local tex = st.head.cols[5]:CreateTexture()
+		tex:SetAtlas("Nzoth-tooltip-topper")
+		tex:SetAllPoints(st.head.cols[5])
+		tex:SetTexCoord(0.28,0.72,0,1)
+   end
 
    local b1 = addon:CreateButton(_G.GUILD, f.content)
    b1:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 10)
@@ -382,6 +412,61 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    frame.text:SetText("")
    data[realrow][column].value = "1"
    frame.container:Show()
+end
+
+-- An edited version of the one from VotingFrame.lua
+function GroupGear:CorruptionCellOnEnter (player, cD)
+	-- Use cached data if available
+	if not self.corruptionEffects then
+		-- Cache some corruption related data
+		local corruptionEffects = GetNegativeCorruptionEffectInfo()
+		table.sort(corruptionEffects, function(a, b)
+			return a.minCorruption < b.minCorruption
+		end)
+		self.corruptionEffects = corruptionEffects
+	end
+	local corruption = cD.corruption
+	local corruptionResistance = cD.corruptionResistance
+	local totalCorruption = cD.totalCorruption
+
+	-- Setup corruption tooltip
+   GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR");
+	GameTooltip_SetBackdropStyle(GameTooltip, _G.GAME_TOOLTIP_BACKDROP_STYLE_CORRUPTED_ITEM);
+	GameTooltip:SetMinimumWidth(250);
+	GameTooltip:AddLine(addon:GetUnitClassColoredName(player))
+	GameTooltip:AddLine("")
+	GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_TOOLTIP_LINE, corruption, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
+	GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_RESISTANCE_TOOLTIP_LINE, corruptionResistance, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
+	GameTooltip_AddColoredDoubleLine(GameTooltip, _G.TOTAL_CORRUPTION_TOOLTIP_LINE, totalCorruption, _G.CORRUPTION_COLOR, _G.CORRUPTION_COLOR)
+	GameTooltip_AddBlankLineToTooltip(GameTooltip);
+
+	for i, corruptionInfo in ipairs(self.corruptionEffects) do
+		if i > 1 then
+			GameTooltip_AddBlankLineToTooltip(GameTooltip);
+		end
+		local lastEffect = (corruptionInfo.minCorruption > totalCorruption);
+		GameTooltip_AddColoredLine(GameTooltip, _G.CORRUPTION_EFFECT_HEADER:format(corruptionInfo.name, corruptionInfo.minCorruption), lastEffect and _G.GRAY_FONT_COLOR or _G.HIGHLIGHT_FONT_COLOR);
+		GameTooltip_AddColoredLine(GameTooltip, corruptionInfo.description, lastEffect and _G.GRAY_FONT_COLOR or _G.CORRUPTION_COLOR, true, 10);
+		if lastEffect then
+			break;
+		end
+	end
+	GameTooltip:Show()
+end
+
+function GroupGear.SetCellCorruption (rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+   local name = data[realrow].name
+	local corruption = data[realrow][column].corruptionData or {}
+	frame.text:SetText(corruption.totalCorruption or "")
+	if _G.CORRUPTION_COLOR then
+		frame.text:SetTextColor(_G.CORRUPTION_COLOR:GetRGBA())
+   	-- Tooltip
+   	frame:SetScript("OnEnter", function()
+   		GroupGear:CorruptionCellOnEnter(name, corruption)
+   	end)
+   	frame:SetScript("OnLeave", function() addon:HideTooltip() end)
+   end
+   data[realrow][column].value = corruption.totalCorruption or ""
 end
 
 function GroupGear:EnchantCheck(item)
