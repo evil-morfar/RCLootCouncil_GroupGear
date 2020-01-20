@@ -1,3 +1,9 @@
+### v1.7.1
+---
+* *Forgot to remove corruption related debug print.*
+* *Mousing over a blank corruption value no longer produces an error.*
+
+
 ### v1.7.0
 ---
 * Updated for patch 8.3.0

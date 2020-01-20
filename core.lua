@@ -214,7 +214,6 @@ function GroupGear:AddCorruptionData (name, corruptionData)
       corruptionResistance = corruptionResistance,
       totalCorruption = totalCorruption
    }
-   print(format("Done corruption %d for %s", totalCorruption, name))
 end
 
 -- Function to return everything needed by GroupGear to the requester
@@ -434,6 +433,7 @@ function GroupGear:CorruptionCellOnEnter (player, cD)
 	local corruptionResistance = cD.corruptionResistance
 	local totalCorruption = cD.totalCorruption
 
+   if not corruption then return end
 	-- Setup corruption tooltip
    GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR");
 	GameTooltip_SetBackdropStyle(GameTooltip, _G.GAME_TOOLTIP_BACKDROP_STYLE_CORRUPTED_ITEM);
