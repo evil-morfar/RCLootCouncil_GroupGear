@@ -3,23 +3,12 @@
 -- core.lua 	Adds a frame showing your groups gear based on the RCLootCouncil framework.
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-local GroupGear = addon:NewModule("RCGroupGear", "AceComm-3.0", "AceConsole-3.0", "AceTimer-3.0")
+GroupGear = addon:NewModule("RCGroupGear", "AceComm-3.0", "AceConsole-3.0", "AceTimer-3.0")
 local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local ST = LibStub("ScrollingTable")
 
 local ROW_HEIGHT = 20
 local num_display_gear = 16
-
-local scrollCols = {
-   { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
-   { name = _G.NAME,  width = 120},                                                                                   -- Player name
-   { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
-   { name = "A. traits",width = 60,  align = "CENTER"},                                                               -- # of artifact traits
-   { name = "",         width = 30, align = "CENTER" },                                                              -- Corruption (Patch 8.3)
-   { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
-   { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
-}
-
 
 local registeredPlayers = {} -- names are stored in lowercase for consistency
 local db, viewMenuFrame
@@ -38,24 +27,47 @@ function GroupGear:OnInitialize()
    }
 
    self.db = LibStub("AceDB-3.0"):New("RCGroupGearDB", defaults, true)
+
    db = self.db.profile
 
    viewMenuFrame = _G.MSA_DropDownMenu_Create("RCLootCouncil_GroupGear_ViewMenu", UIParent)
    _G.MSA_DropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
-   -- register chat and comms
-   self:Enable()
+   -- register chat and comms, but delay till addon has loaded
+   self:ScheduleTimer("Enable", 1)
 end
 
 function GroupGear:OnEnable()
    addon:Debug("GroupGear", self.version, "enabled")
    -- This changes in rclc v2.7.6
-if addon:VersionCompare(addon.version, "2.7.6") then
-   addon:CustomChatCmd(self, "Show", "- gg - Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
-else
-   addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
-end
+   if addon:VersionCompare(addon.version, "2.7.6") then
+      addon:CustomChatCmd(self, "Show", "- gg - Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
+   else
+      addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
+   end
+
+   self.scrollCols = addon.isClassic
+      and -- Classic
+      {
+         { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
+         { name = _G.NAME,  width = 120},                                                                                   -- Player name
+         { name = _G.RANK,    width = 120},                                                                                 -- Guild rank
+         { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
+         { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
+         { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
+      }
+      or -- Retail:
+      {
+         { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
+         { name = _G.NAME,  width = 120},                                                                                   -- Player name
+         { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
+         { name = "A. traits",width = 60,  align = "CENTER"},                                                               -- # of artifact traits
+         { name = "",         width = 30, align = "CENTER" },                                                              -- Corruption (Patch 8.3)
+         { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
+         { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
+      }
+
+
    self:RegisterComm("RCLootCouncil")
-   self.frame = self:GetFrame()
 end
 
 function GroupGear:OnDisable()
@@ -135,7 +147,9 @@ end
 function GroupGear:SendQueryRequests (target)
    addon:SendCommand(target, "playerInfoRequest")
    addon:SendCommand(target, "groupGearRequest")
-   addon:SendCommand(target, "getCorruptionData")
+   if not addon.isClassic then
+      addon:SendCommand(target, "getCorruptionData")
+   end
 end
 
 function GroupGear:Query(method)
@@ -185,7 +199,18 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
       if gear and #gear > 0 then self.frame.rows[row][6].gear = gear end
       addon:Debug("GG:AddEntry(Update)", name, row)
    else
-      tinsert(self.frame.rows, {
+      tinsert(self.frame.rows,
+      addon.isClassic
+      and -- Classic
+      {
+         {args = {class} },
+         {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
+         {value = guildRank or _G.UNKNOWN},
+         {value = ilvl and addon.round(ilvl,2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
+         {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
+         {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},}
+      or -- Retail
+      {
          {args = {class} },
          {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
       --   {value = guildRank or "Unknown"},
@@ -219,7 +244,7 @@ end
 -- Function to return everything needed by GroupGear to the requester
 function GroupGear:GetGroupGearInfo()
    local name, class, _, guildRank, _, _, ilvl = addon:GetPlayerInfo()
-   local hoaLocation = _G.C_AzeriteItem.FindActiveAzeriteItem()
+   local hoaLocation = not addon.isClassic and _G.C_AzeriteItem.FindActiveAzeriteItem()
    local hoalvl = 0
    if hoaLocation then
       hoalvl = C_AzeriteItem.GetPowerLevel(hoaLocation)
@@ -280,7 +305,7 @@ function GroupGear:GetFrame()
    if self.frame then return self.frame end
    local f = addon:CreateFrame("RCGroupGearFrame", "groupGear", "RCLootCouncil - Group Gear", 250)
 
-   local st = ST:CreateST(scrollCols, 12, ROW_HEIGHT, nil, f.content)
+   local st = ST:CreateST(self.scrollCols, 12, ROW_HEIGHT, nil, f.content)
 	st.frame:SetPoint("TOPLEFT",f,"TOPLEFT",10,-35)
 	f:SetWidth(st.frame:GetWidth()+20)
    f.rows = {}

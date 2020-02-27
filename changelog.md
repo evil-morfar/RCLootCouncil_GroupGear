@@ -1,3 +1,8 @@
+### v1.8.0 Classic Release
+---
+* Ported to Classic
+
+
 ### v1.7.1
 ---
 * *Forgot to remove corruption related debug print.*
