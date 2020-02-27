@@ -16,6 +16,11 @@ targets:
          - "-p"
    Classic:
       name: "Deploy Classic"
-      cmd: "sh .scripts/deploy.sh"
+      cmd: ".scripts/deploy.sh"
+      sh: false
       args:
          - "-c"
+   GG-Release:
+      name: "GG:Release"
+      cmd: ".scripts/build.sh"
+      sh: false

@@ -19,12 +19,14 @@ usage() {
 ADDON_LOC="$(pwd)"
 ADDON="$(basename $ADDON_LOC)"
 WOWEDITION="_retail_"
+is_classic=false
 
 # Commandline inputs
 while getopts ":cp" opt; do
 	case $opt in
       c)
-         WOWEDITION="_classic_";;
+         WOWEDITION="_classic_"
+			is_classic=true;;
       p)
          WOWEDITION="_ptr_";;
       /?)
@@ -47,10 +49,22 @@ if [ -z "$WOW_LOCATION" ]; then
    exit;
 fi
 
+TEMP_DEST=".tmp/$ADDON"
 DEST="$WOW_LOCATION$WOWEDITION/Interface/AddOns/$ADDON"
 
-# Deploy:
-# cp "$ADDON_LOC" "$DEST" -ruv
-robocopy "$ADDON_LOC" "$DEST" //s //purge //xo //XD .* __*  //XF ?.* __*
+if [ "$is_classic" = "true" ]; then
+	# Classic version needs replacements, so deploy it with release.sh
+	".scripts/release.sh" -r "$(pwd)/.tmp" -dozel -g 1.13.3
+else
+	# Copy to temp folder:
+	# cp "$ADDON_LOC" "$TEMP_DEST" -ruv
+	robocopy "$ADDON_LOC" "$TEMP_DEST" //s //purge //xo //XD .* __*  .tmp //XF ?.* __*
+fi
 
+# Do file additional replacements we don't want release.sh to handle.
+. "./.scripts/replace.sh" "$TEMP_DEST" "$is_classic"
+
+robocopy "$TEMP_DEST" "$DEST" //s //purge //xo //XD .* __*  //XF ?.* __*
+
+rm -r ".tmp/"
 echo "Finished deploying $ADDON"
