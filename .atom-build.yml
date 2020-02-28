@@ -1,5 +1,6 @@
-cmd: "sh .scripts/deploy.sh"
+cmd: ".scripts/deploy.sh"
 name: "Deploy Retail"
+sh: false
 args:
    - "{FILE_ACTIVE_PATH}"
 
