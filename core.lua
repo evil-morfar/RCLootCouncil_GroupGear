@@ -50,7 +50,7 @@ function GroupGear:OnEnable()
       {
          { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
          { name = _G.NAME,  width = 120},                                                                                   -- Player name
-         { name = _G.RANK,    width = 120},                                                                                 -- Guild rank
+         { name = _G.RANK,    width = 100},                                                                                 -- Guild rank
          { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
          { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
          { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
