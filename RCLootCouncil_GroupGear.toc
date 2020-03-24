@@ -11,6 +11,7 @@
 ## Title: RCLootCouncil - Group Gear
 ## Version: 1.8.0
 ## SavedVariables: RCGroupGearDB
+## X-Curse-Project-ID: 102435
 
 core.lua
 lists.lua
