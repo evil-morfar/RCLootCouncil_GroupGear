@@ -4,7 +4,7 @@
 ## Dependencies: RCLootCouncil
 #@end-retail@
 #@non-retail@
-# ## Interface: 11303
+# ## Interface: 11304
 # ## Dependencies: RCLootCouncil_Classic
 #@end-non-retail@
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
