@@ -192,6 +192,7 @@ function GroupGear:Refresh()
 end
 
 function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
+   if not self.frame then return end
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
       if ilvl and ilvl ~= 0 then self.frame.rows[row][3].value = addon.round(ilvl,2) end
