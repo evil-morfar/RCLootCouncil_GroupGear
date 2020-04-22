@@ -248,7 +248,7 @@ function GroupGear:GetGroupGearInfo()
    local hoaLocation = not addon.isClassic and _G.C_AzeriteItem.FindActiveAzeriteItem()
    local hoalvl = 0
    if hoaLocation then
-      hoalvl = C_AzeriteItem.GetPowerLevel(hoaLocation)
+      hoalvl = _G.C_AzeriteItem.GetPowerLevel(hoaLocation)
    end
    return name, class, guildRank, ilvl, hoalvl, self:GetPlayersGear()
 end
@@ -449,7 +449,7 @@ function GroupGear:CorruptionCellOnEnter (player, cD)
    -- Use cached data if available
    if not self.corruptionEffects then
       -- Cache some corruption related data
-      local corruptionEffects = GetNegativeCorruptionEffectInfo()
+      local corruptionEffects = _G.GetNegativeCorruptionEffectInfo()
       table.sort(corruptionEffects, function(a, b)
          return a.minCorruption < b.minCorruption
       end)
