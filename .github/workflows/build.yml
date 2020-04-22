@@ -1,0 +1,30 @@
+name: CI
+
+on:
+  push:
+    branches: 
+      - master
+    tags:
+      - '*'
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - uses: actions/checkout@v2
+    - name: Install and run luacheck
+      run: |
+        sudo apt-get install luarocks
+        luarocks install luacheck
+        luacheck . -q
+
+    - name: Build Retail Addon
+      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
+
+    - name: Build Classic Addon
+      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.4
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        GITHUB_OAUTH: ${{ secrets.GITHUB_OAUTH }}
