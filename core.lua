@@ -4,7 +4,7 @@
 
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 GroupGear = addon:NewModule("RCGroupGear", "AceComm-3.0", "AceConsole-3.0", "AceTimer-3.0")
-local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
+-- local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local ST = LibStub("ScrollingTable")
 
 local ROW_HEIGHT = 20
@@ -46,25 +46,25 @@ function GroupGear:OnEnable()
    end
 
    self.scrollCols = addon.isClassic
-      and -- Classic
-      {
-         { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
-         { name = _G.NAME,  width = 120},                                                                                   -- Player name
-         { name = _G.RANK,    width = 100},                                                                                 -- Guild rank
-         { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
-         { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
-         { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
-      }
-      or -- Retail:
-      {
-         { name = "",         width = 20,  DoCellUpdate = addon.SetCellClassIcon,},                                         -- class icon
-         { name = _G.NAME,  width = 120},                                                                                   -- Player name
-         { name = _G.ITEM_LEVEL_ABBR,  width = 55,  align = "CENTER"},                                                      -- ilvl
-         { name = "A. traits",width = 60,  align = "CENTER"},                                                               -- # of artifact traits
-         { name = "",         width = 30, align = "CENTER" },                                                              -- Corruption (Patch 8.3)
-         { name = "Gear",     width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",sortnext = 3 },    -- Gear
-         { name = "",         width = 20,  DoCellUpdate = GroupGear.SetCellRefresh,},                                       -- Refresh icon
-      }
+   and -- Classic
+   {
+      { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
+      { name = _G.NAME, width = 120}, -- Player name
+      { name = _G.RANK, width = 100}, -- Guild rank
+      { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
+      { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
+      { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
+   }
+   or -- Retail:
+   {
+      { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
+      { name = _G.NAME, width = 120}, -- Player name
+      { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
+      { name = "A. traits", width = 60, align = "CENTER"}, -- # of artifact traits
+      { name = "", width = 30, align = "CENTER" }, -- Corruption (Patch 8.3)
+      { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
+      { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
+   }
 
 
    self:RegisterComm("RCLootCouncil")
@@ -129,7 +129,7 @@ function GroupGear:QueryGroup()
    else -- Check the group
       for i = 1, GetNumGroupMembers() do
          local name, _, _, _, _, class = GetRaidRosterInfo(i)
-         local rank =  select(2, GetGuildInfo(name))
+         local rank = select(2, GetGuildInfo(name))
          self:AddEntry(name, class, rank)
       end
    end
@@ -137,7 +137,7 @@ end
 
 function GroupGear:QueryGuild()
    for i = 1, GetNumGuildMembers() do
-      local name, rank, _,_,_,_,_,_, online,_, class = GetGuildRosterInfo(i)
+      local name, rank, _, _, _, _, _, _, online, _, class = GetGuildRosterInfo(i)
       if online then
          self:AddEntry(name, class, rank)
       end
@@ -180,7 +180,7 @@ function GroupGear:GetAverageItemLevel()
          num = num + 1
       end
    end
-   return addon.round(ilvl/num, 2)
+   return addon.round(ilvl / num, 2)
 end
 
 function GroupGear:Refresh()
@@ -195,31 +195,31 @@ function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
    if not self.frame then return end
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
-      if ilvl and ilvl ~= 0 then self.frame.rows[row][3].value = addon.round(ilvl,2) end
-      if artifactTraits then     self.frame.rows[row][4].value = artifactTraits or "Unknown" end
+      if ilvl and ilvl ~= 0 then self.frame.rows[row][3].value = addon.round(ilvl, 2) end
+      if artifactTraits then self.frame.rows[row][4].value = artifactTraits or "Unknown" end
       if gear and #gear > 0 then self.frame.rows[row][6].gear = gear end
       addon:Debug("GG:AddEntry(Update)", name, row)
    else
       tinsert(self.frame.rows,
-      addon.isClassic
-      and -- Classic
-      {
-         {args = {class} },
-         {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-         {value = guildRank or _G.UNKNOWN},
-         {value = ilvl and addon.round(ilvl,2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
-         {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
-         {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},}
-      or -- Retail
-      {
-         {args = {class} },
-         {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-      --   {value = guildRank or "Unknown"},
-         {value = ilvl and addon.round(ilvl,2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
-         {value = artifactTraits or "Unknown"},
-         {value = "", DoCellUpdate = GroupGear.SetCellCorruption, corruptionData = {}},
-         {value = "", DoCellUpdate = GroupGear.SetCellGear,    gear = gear},
-         {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
+         addon.isClassic
+         and -- Classic
+         {
+            {args = {class} },
+            {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
+            {value = guildRank or _G.UNKNOWN},
+            {value = ilvl and addon.round(ilvl, 2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
+            {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = gear},
+         {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name}, }
+         or -- Retail
+         {
+            {args = {class} },
+            {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
+            --   {value = guildRank or "Unknown"},
+            {value = ilvl and addon.round(ilvl, 2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
+            {value = artifactTraits or "Unknown"},
+            {value = "", DoCellUpdate = GroupGear.SetCellCorruption, corruptionData = {}},
+            {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = gear},
+            {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
       })
       local index = #self.frame.rows
       self.frame.rows[index].name = name
@@ -307,15 +307,15 @@ function GroupGear:GetFrame()
    local f = addon:CreateFrame("RCGroupGearFrame", "groupGear", "RCLootCouncil - Group Gear", 250)
 
    local st = ST:CreateST(self.scrollCols, 12, ROW_HEIGHT, nil, f.content)
-	st.frame:SetPoint("TOPLEFT",f,"TOPLEFT",10,-35)
-	f:SetWidth(st.frame:GetWidth()+20)
+   st.frame:SetPoint("TOPLEFT", f, "TOPLEFT", 10, - 35)
+   f:SetWidth(st.frame:GetWidth() + 20)
    f.rows = {}
-	f.st = st
+   f.st = st
    if _G.CORRUPTION_COLOR then
       local tex = st.head.cols[5]:CreateTexture()
-		tex:SetAtlas("Nzoth-tooltip-topper")
-		tex:SetAllPoints(st.head.cols[5])
-		tex:SetTexCoord(0.28,0.72,0,1)
+      tex:SetAtlas("Nzoth-tooltip-topper")
+      tex:SetAllPoints(st.head.cols[5])
+      tex:SetTexCoord(0.28, 0.72, 0, 1)
    end
 
    local b1 = addon:CreateButton(_G.GUILD, f.content)
@@ -329,20 +329,20 @@ function GroupGear:GetFrame()
    f.guildButton = b2
 
    local b3 = addon:CreateButton(_G.CLOSE, f.content)
-   b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -10, 10)
+   b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", - 10, 10)
    b3:SetScript("OnClick", function() self:Hide() end)
    f.closeButton = b3
 
    local b4 = CreateFrame("Button", nil, f.content)
-   b4:SetSize(20,20)
-   b4:SetPoint("LEFT", b2, "RIGHT",8,0)
+   b4:SetSize(20, 20)
+   b4:SetPoint("LEFT", b2, "RIGHT", 8, 0)
    b4:SetNormalTexture("Interface/MINIMAP/TRACKING/None")
    -- b4:SetBackdrop({
    --    bgFile = "Interface/Minimap/UI-Minimap-Background",
    --    --bgFile = "Interface/Minimap/Minimap-TrackingBorder",
    -- })
    b4:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-   b4:SetScript("OnClick", function(self) MSA_ToggleDropDownMenu(1, nil, viewMenuFrame, self, 0, 0) end )
+   b4:SetScript("OnClick", function(this) MSA_ToggleDropDownMenu(1, nil, viewMenuFrame, this, 0, 0) end )
    -- b4.border = b4:CreateTexture()
    -- b4.border:SetTexture("Interface/Minimap/Minimap-TrackingBorder")
    -- b4.border:SetSize(44,44)
@@ -351,7 +351,7 @@ function GroupGear:GetFrame()
 
    local f1 = f.content:CreateFontString(nil, "OVERLAY", "GameFontNormal")
    f1:SetPoint("LEFT", b4, "RIGHT", 10, 0)
-   f1:SetTextColor(1,1,1,1)
+   f1:SetTextColor(1, 1, 1, 1)
    f.avgilvl = f1
 
    return f
@@ -383,7 +383,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    local gear = data[realrow][column].gear
    -- Function to create a frame containing the x num of gear frames
    local function create()
-      frame.text:SetTextColor(.75,.75,.75,1)
+      frame.text:SetTextColor(.75, .75, .75, 1)
       local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
       f:SetPoint("LEFT", frame, "LEFT")
       f:SetSize(ROW_HEIGHT * num_display_gear + num_display_gear, ROW_HEIGHT)
@@ -392,17 +392,17 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       for i = 1, num_display_gear do
          f.gear[i] = CreateFrame("Button", f:GetName()..i, f)
          if i == 1 then
-            f.gear[i]:SetPoint("LEFT", f, "LEFT",0,0)
+            f.gear[i]:SetPoint("LEFT", f, "LEFT", 0, 0)
          else
-            f.gear[i]:SetPoint("LEFT", f.gear[i-1], "RIGHT",1,0)
+            f.gear[i]:SetPoint("LEFT", f.gear[i - 1], "RIGHT", 1, 0)
          end
          f.gear[i]:SetSize(ROW_HEIGHT, ROW_HEIGHT)
          f.gear[i]:SetScript("OnLeave", function() addon:HideTooltip() end)
 
          f.gear[i].overlay = f.gear[i]:CreateTexture(nil, "OVERLAY")
          f.gear[i].overlay:SetSize(ROW_HEIGHT, ROW_HEIGHT)
-         f.gear[i].overlay:SetPoint("CENTER",f.gear[i])
-         f.gear[i].overlay:SetColorTexture(1,0.1,0.1,0.5)
+         f.gear[i].overlay:SetPoint("CENTER", f.gear[i])
+         f.gear[i].overlay:SetColorTexture(1, 0.1, 0.1, 0.5)
          f.gear[i].overlay:Hide()
 
          f.gear[i].ilvl = f.gear[i]:CreateFontString(nil, "OVERLAY", "GameFontNormalSmall")
@@ -435,8 +435,8 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       gearFrame:SetNormalTexture(texture)
 
       gearFrame.ilvl:SetText(ilvl)
-      local r,g,b = GetItemQualityColor(quality or 1)
-      gearFrame.ilvl:SetTextColor(r,g,b,1)
+      local r, g, b = GetItemQualityColor(quality or 1)
+      gearFrame.ilvl:SetTextColor(r, g, b, 1)
       GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i)
    end
    frame.text:SetText("")
@@ -446,56 +446,56 @@ end
 
 -- An edited version of the one from VotingFrame.lua
 function GroupGear:CorruptionCellOnEnter (player, cD)
-	-- Use cached data if available
-	if not self.corruptionEffects then
-		-- Cache some corruption related data
-		local corruptionEffects = GetNegativeCorruptionEffectInfo()
-		table.sort(corruptionEffects, function(a, b)
-			return a.minCorruption < b.minCorruption
-		end)
-		self.corruptionEffects = corruptionEffects
-	end
-	local corruption = cD.corruption
-	local corruptionResistance = cD.corruptionResistance
-	local totalCorruption = cD.totalCorruption
+   -- Use cached data if available
+   if not self.corruptionEffects then
+      -- Cache some corruption related data
+      local corruptionEffects = GetNegativeCorruptionEffectInfo()
+      table.sort(corruptionEffects, function(a, b)
+         return a.minCorruption < b.minCorruption
+      end)
+      self.corruptionEffects = corruptionEffects
+   end
+   local corruption = cD.corruption
+   local corruptionResistance = cD.corruptionResistance
+   local totalCorruption = cD.totalCorruption
 
    if not corruption then return end
-	-- Setup corruption tooltip
+   -- Setup corruption tooltip
    GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR");
-	GameTooltip_SetBackdropStyle(GameTooltip, _G.GAME_TOOLTIP_BACKDROP_STYLE_CORRUPTED_ITEM);
-	GameTooltip:SetMinimumWidth(250);
-	GameTooltip:AddLine(addon:GetUnitClassColoredName(player))
-	GameTooltip:AddLine("")
-	GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_TOOLTIP_LINE, corruption, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
-	GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_RESISTANCE_TOOLTIP_LINE, corruptionResistance, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
-	GameTooltip_AddColoredDoubleLine(GameTooltip, _G.TOTAL_CORRUPTION_TOOLTIP_LINE, totalCorruption, _G.CORRUPTION_COLOR, _G.CORRUPTION_COLOR)
-	GameTooltip_AddBlankLineToTooltip(GameTooltip);
+   GameTooltip_SetBackdropStyle(GameTooltip, _G.GAME_TOOLTIP_BACKDROP_STYLE_CORRUPTED_ITEM);
+   GameTooltip:SetMinimumWidth(250);
+   GameTooltip:AddLine(addon:GetUnitClassColoredName(player))
+   GameTooltip:AddLine("")
+   GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_TOOLTIP_LINE, corruption, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
+   GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_RESISTANCE_TOOLTIP_LINE, corruptionResistance, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
+   GameTooltip_AddColoredDoubleLine(GameTooltip, _G.TOTAL_CORRUPTION_TOOLTIP_LINE, totalCorruption, _G.CORRUPTION_COLOR, _G.CORRUPTION_COLOR)
+   GameTooltip_AddBlankLineToTooltip(GameTooltip);
 
-	for i, corruptionInfo in ipairs(self.corruptionEffects) do
-		if i > 1 then
-			GameTooltip_AddBlankLineToTooltip(GameTooltip);
-		end
-		local lastEffect = (corruptionInfo.minCorruption > totalCorruption);
-		GameTooltip_AddColoredLine(GameTooltip, _G.CORRUPTION_EFFECT_HEADER:format(corruptionInfo.name, corruptionInfo.minCorruption), lastEffect and _G.GRAY_FONT_COLOR or _G.HIGHLIGHT_FONT_COLOR);
-		GameTooltip_AddColoredLine(GameTooltip, corruptionInfo.description, lastEffect and _G.GRAY_FONT_COLOR or _G.CORRUPTION_COLOR, true, 10);
-		if lastEffect then
-			break;
-		end
-	end
-	GameTooltip:Show()
+   for i, corruptionInfo in ipairs(self.corruptionEffects) do
+      if i > 1 then
+         GameTooltip_AddBlankLineToTooltip(GameTooltip);
+      end
+      local lastEffect = (corruptionInfo.minCorruption > totalCorruption);
+      GameTooltip_AddColoredLine(GameTooltip, _G.CORRUPTION_EFFECT_HEADER:format(corruptionInfo.name, corruptionInfo.minCorruption), lastEffect and _G.GRAY_FONT_COLOR or _G.HIGHLIGHT_FONT_COLOR);
+      GameTooltip_AddColoredLine(GameTooltip, corruptionInfo.description, lastEffect and _G.GRAY_FONT_COLOR or _G.CORRUPTION_COLOR, true, 10);
+      if lastEffect then
+         break;
+      end
+   end
+   GameTooltip:Show()
 end
 
 function GroupGear.SetCellCorruption (rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local name = data[realrow].name
-	local corruption = data[realrow][column].corruptionData or {}
-	frame.text:SetText(corruption.totalCorruption or "")
-	if _G.CORRUPTION_COLOR then
-		frame.text:SetTextColor(_G.CORRUPTION_COLOR:GetRGBA())
-   	-- Tooltip
-   	frame:SetScript("OnEnter", function()
-   		GroupGear:CorruptionCellOnEnter(name, corruption)
-   	end)
-   	frame:SetScript("OnLeave", function() addon:HideTooltip() end)
+   local corruption = data[realrow][column].corruptionData or {}
+   frame.text:SetText(corruption.totalCorruption or "")
+   if _G.CORRUPTION_COLOR then
+      frame.text:SetTextColor(_G.CORRUPTION_COLOR:GetRGBA())
+      -- Tooltip
+      frame:SetScript("OnEnter", function()
+         GroupGear:CorruptionCellOnEnter(name, corruption)
+      end)
+      frame:SetScript("OnLeave", function() addon:HideTooltip() end)
    end
    data[realrow][column].value = corruption.totalCorruption or ""
 end
@@ -517,10 +517,10 @@ end
 
 function GroupGear:GemCheck(item)
    if db.showMissingGems or db.showRareGems then
-      local _, _, _, _, gemID1, _, _, _, _, _, _,_, _, _, _, _, bonusIDs = addon:DecodeItemLink(item)
+      local _, _, _, _, gemID1, _, _, _, _, _, _, _, _, _, _, _, bonusIDs = addon:DecodeItemLink(item)
       if gemID1 == 0 or gemID1 == "" then gemID1 = false end
       -- check if we should have a gem:
-      for _,id in ipairs(bonusIDs) do
+      for _, id in ipairs(bonusIDs) do
          if self.Lists.socketsBonusIDs[id] then -- There's a socket
             if not gemID1 then
                return true
