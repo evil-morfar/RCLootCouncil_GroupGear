@@ -2,8 +2,6 @@ name: CI
 
 on:
   push:
-    branches: 
-      - master
     tags:
       - '*'
 jobs:
@@ -14,8 +12,8 @@ jobs:
     - name: Install and run luacheck
       run: |
         sudo apt-get install luarocks
-        luarocks install luacheck
-        luacheck . -q
+        luarocks install --local luacheck
+        /home/runner/.luarocks/bin/luacheck . -q
 
     - name: Build Retail Addon
       run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
