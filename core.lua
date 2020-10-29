@@ -7,6 +7,11 @@ GroupGear = addon:NewModule("RCGroupGear", "AceComm-3.0", "AceConsole-3.0", "Ace
 -- local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local ST = LibStub("ScrollingTable")
 
+--- @type Services.Comms
+local Comms = addon.Require "Services.Comms"
+--- @type Data.Player
+local Player = addon.Require "Data.Player"
+
 local ROW_HEIGHT = 20
 local num_display_gear = 16
 
@@ -16,7 +21,9 @@ local updateTimer -- Used to update the display when all items have been cached
 
 
 function GroupGear:OnInitialize()
+   self.Log = addon.Require "Log":New("GG")
    self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
+   self.tVersion = "Alpha.1"
    local defaults = {
       profile = {
          showMissingGems = true,
@@ -37,78 +44,77 @@ function GroupGear:OnInitialize()
 end
 
 function GroupGear:OnEnable()
-   addon:Debug("GroupGear", self.version, "enabled")
-   -- This changes in rclc v2.7.6
-   if addon:VersionCompare(addon.version, "2.7.6") then
-      addon:CustomChatCmd(self, "Show", "- gg - Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
-   else
-      addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
-   end
+   self.Log("GroupGear", self.version, "enabled")
+   addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
 
-   self.scrollCols = addon.isClassic
-   and -- Classic
-   {
-      { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
-      { name = _G.NAME, width = 120}, -- Player name
-      { name = _G.RANK, width = 100}, -- Guild rank
-      { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
-      { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
-      { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
-   }
-   or -- Retail:
-   {
-      { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
-      { name = _G.NAME, width = 120}, -- Player name
-      { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
-      { name = "A. traits", width = 60, align = "CENTER"}, -- # of artifact traits
-      { name = "", width = 30, align = "CENTER" }, -- Corruption (Patch 8.3)
-      { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
-      { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
-   }
-
-
-   self:RegisterComm("RCLootCouncil")
+   self.colNameToIndex = {}
+   self.scrollCols = self:SetupColumns()
+   self:SubPermanentComms()
 end
 
 function GroupGear:OnDisable()
    self:Hide()
 end
 
-function GroupGear:OnCommReceived(prefix, serializedMsg, distri, sender)
-   if prefix == "RCLootCouncil" then
-      if addon:UnitIsUnit(sender, "player") and not addon.debug then return end -- We handle ourself in the code
-      -- data is always a table to be unpacked
-      local test, command, data = addon:Deserialize(serializedMsg)
-      if addon:HandleXRealmComms(self, command, data, sender) then return end
-      if test then
-         if command == "groupGearRequest" then
-            if distri == "GUILD" then
-               addon:SendCommand("guild", "groupGearResponse", self:GetGroupGearInfo())
-            else
-               addon:SendCommand("group", "groupGearResponse", self:GetGroupGearInfo())
-            end
-         elseif command == "groupGearResponse" then
-            self:AddEntry(unpack(data))
-            self:Update()
-
-         elseif command == "playerInfo" then
-            local name, class, _, guildRank, _, _, ilvl = unpack(data)
-            self:AddEntry(name, class, guildRank, ilvl)
-            self:Update()
-
-         elseif command == "corruptionData" then
-            self:AddCorruptionData(sender, unpack(data))
-            self:Update()
+function GroupGear:SubPermanentComms()
+   Comms:BulkSubscribe(addon.PREFIXES.MAIN, {
+      gear = function (data, sender)
+         local player = Player:Get(sender)
+         local gear = unpack(data)
+         -- Gear needs to be "Uncleaned"
+         for k,v in pairs(gear) do
+            gear[k] = addon.Utils:UncleanItemString(v)
          end
+
+         self:UpdateEntry(player, nil, nil, gear)
+         self:Update()
+      end,
+
+      pI = function(data, sender, command, distri)
+         local _, guildRank, _, _, ilvl = unpack(data)
+         local player = Player:Get(sender)
+         self:UpdateEntry (player, ilvl, guildRank)
+         self:Update()
       end
+   })
+end
+
+function GroupGear:SetupColumns ()
+   if addon.isClassic then
+         self.colNameToIndex.class = 1
+         self.colNameToIndex.name = 2
+         self.colNameToIndex.rank = 3
+         self.colNameToIndex.ilvl = 4
+         self.colNameToIndex.gear = 5
+         self.colNameToIndex.refresh = 6
+      return {
+         { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
+         { name = _G.NAME, width = 120}, -- Player name
+         { name = _G.RANK, width = 100}, -- Guild rank
+         { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
+         { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
+         { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
+      }
+   else
+         self.colNameToIndex.class = 1
+         self.colNameToIndex.name = 2
+         self.colNameToIndex.ilvl = 3
+         self.colNameToIndex.gear = 4
+         self.colNameToIndex.refresh = 5
+      return {
+         { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
+         { name = _G.NAME, width = 120}, -- Player name
+         { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
+         { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
+         { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
+      }
    end
 end
 
 function GroupGear:Show()
    self.frame = self:GetFrame()
    -- Add our self
-   self:AddEntry(self:GetGroupGearInfo())
-   self:AddCorruptionData(addon.playerName, addon:GetPlayerCorruption())
+   -- self:AddEntry(self:GetGroupGearInfo())
    self.frame.st:SetData(self.frame.rows, true)
    self.frame:Show()
 end
@@ -122,46 +128,35 @@ function GroupGear:IsShown()
 end
 
 function GroupGear:QueryGroup()
-   if addon.candidates and addon.candidates[addon.playerName] then -- just use this
-      for name, data in pairs(addon.candidates) do
-         self:AddEntry(name, data.class, data.rank)
-      end
-   else -- Check the group
-      for i = 1, GetNumGroupMembers() do
-         local name, _, _, _, _, class = GetRaidRosterInfo(i)
-         local rank = select(2, GetGuildInfo(name))
-         self:AddEntry(name, class, rank)
-      end
+   for name in addon:GroupIterator() do
+      self:InitEntry(Player:Get(name))
    end
 end
 
 function GroupGear:QueryGuild()
    for i = 1, GetNumGuildMembers() do
-      local name, rank, _, _, _, _, _, _, online, _, class = GetGuildRosterInfo(i)
+      local _, _, _, _, _, _, _, _, online, _, _, _, _, _, _,_, guid = GetGuildRosterInfo(i)
       if online then
-         self:AddEntry(name, class, rank)
+         self:InitEntry(Player:Get(guid))
       end
    end
 end
 
 function GroupGear:SendQueryRequests (target)
-   addon:SendCommand(target, "playerInfoRequest")
-   addon:SendCommand(target, "groupGearRequest")
-   if not addon.isClassic then
-      addon:SendCommand(target, "getCorruptionData")
-   end
+   addon:Send(target, "playerInfoRequest")
+   addon:Send(target, "Rgear")
 end
 
 function GroupGear:Query(method)
    self.frame.rows = {}
    registeredPlayers = {}
    -- Add our self
-   self:AddEntry(self:GetGroupGearInfo())
-   self:AddCorruptionData(addon.playerName, addon:GetPlayerCorruption())
-   self:QueryGroup()
+   -- self:AddEntry(self:GetGroupGearInfo())
    if method == "group" then
+      self:QueryGroup()
       self:SendQueryRequests(method)
    elseif method == "guild" then
+      self:QueryGuild()
       self:SendQueryRequests(method)
    end
    self.frame.st:SetData(self.frame.rows, true)
@@ -191,79 +186,34 @@ function GroupGear:Refresh()
    self.frame.avgilvl:SetText(ilvl and "Average ilvl: "..ilvl or "")
 end
 
-function GroupGear:AddEntry(name, class, guildRank, ilvl, artifactTraits, gear)
-   if not self.frame then return end
+function GroupGear:UpdateEntry (player, ilvl, rank, gear)
+   local name = player:GetName()
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
-      if ilvl and ilvl ~= 0 then self.frame.rows[row][3].value = addon.round(ilvl, 2) end
-      if artifactTraits then self.frame.rows[row][4].value = artifactTraits or "Unknown" end
-      if gear and #gear > 0 then self.frame.rows[row][6].gear = gear end
-      addon:Debug("GG:AddEntry(Update)", name, row)
-   else
-      tinsert(self.frame.rows,
-         addon.isClassic
-         and -- Classic
-         {
-            {args = {class} },
-            {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-            {value = guildRank or _G.UNKNOWN},
-            {value = ilvl and addon.round(ilvl, 2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
-            {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = gear},
-         {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name}, }
-         or -- Retail
+      if ilvl and ilvl ~= 0 then self.frame.rows[row][self.colNameToIndex.ilvl].value = addon.round(ilvl, 2) end
+      if gear and #gear > 0 then self.frame.rows[row][self.colNameToIndex.gear].gear = gear end
+      self.Log:D("UpdateEntry", name, row)
+   end
+end
+
+function GroupGear:InitEntry (player)
+   if not self.frame then return end
+   local name = player:GetName()
+   local class = player:GetClass()
+   tinsert(self.frame.rows,
+      -- Retail
          {
             {args = {class} },
             {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
             --   {value = guildRank or "Unknown"},
-            {value = ilvl and addon.round(ilvl, 2) or 0, DoCellUpdate = GroupGear.SetCellIlvl},
-            {value = artifactTraits or "Unknown"},
-            {value = "", DoCellUpdate = GroupGear.SetCellCorruption, corruptionData = {}},
-            {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = gear},
+            {value = 0, DoCellUpdate = GroupGear.SetCellIlvl},
+            {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = {}},
             {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
       })
       local index = #self.frame.rows
       self.frame.rows[index].name = name
-      addon:Debug("GG:AddEntry", name, index)
+      self.Log:D("InitEntry", name, index)
       registeredPlayers[name:lower()] = index
-   end
-end
-
-function GroupGear:AddCorruptionData (name, corruptionData)
-   if not _G.CORRUPTION_COLOR then return end -- Sanity for if it's removed
-   name = addon:UnitName(name) -- Might need to restore realm
-   local corruption, corruptionResistance = unpack(corruptionData)
-   local totalCorruption = math.max(corruption - corruptionResistance, 0);
-   local row = registeredPlayers[name:lower()]
-   if not row then return error(format("Got corruptionData for %s before row exists", name)) end -- Not created yet. TODO Consider a queue system.
-   self.frame.rows[row][5].corruptionData = {
-      corruption = corruption,
-      corruptionResistance = corruptionResistance,
-      totalCorruption = totalCorruption
-   }
-end
-
--- Function to return everything needed by GroupGear to the requester
-function GroupGear:GetGroupGearInfo()
-   local name, class, _, guildRank, _, _, ilvl = addon:GetPlayerInfo()
-   local hoaLocation = not addon.isClassic and _G.C_AzeriteItem.FindActiveAzeriteItem()
-   local hoalvl = 0
-   if hoaLocation then
-      hoalvl = _G.C_AzeriteItem.GetPowerLevel(hoaLocation)
-   end
-   return name, class, guildRank, ilvl, hoalvl, self:GetPlayersGear()
-end
-
--- Returns a table containing the itemStrings of the player's gear
-function GroupGear:GetPlayersGear()
-   local ret = {}
-   for i = 1, 17 do
-      if i ~= 4 then -- skip the shirt
-         local link = GetInventoryItemLink("player", i)
-         --tinsert(ret, addon:GetItemStringFromLink(link))
-         tinsert(ret, link)
-      end
-   end
-   return ret
 end
 
 function GroupGear:IsPlayerRegistered(name)
@@ -304,19 +254,13 @@ end
 
 function GroupGear:GetFrame()
    if self.frame then return self.frame end
-   local f = addon:CreateFrame("RCGroupGearFrame", "groupGear", "RCLootCouncil - Group Gear", 250)
+   local f = addon.UI:NewNamed("Frame", UIParent, "RCGroupGearFrame", "RCLootCouncil - Group Gear", 250)
 
    local st = ST:CreateST(self.scrollCols, 12, ROW_HEIGHT, nil, f.content)
    st.frame:SetPoint("TOPLEFT", f, "TOPLEFT", 10, - 35)
    f:SetWidth(st.frame:GetWidth() + 20)
    f.rows = {}
    f.st = st
-   if _G.CORRUPTION_COLOR then
-      local tex = st.head.cols[5]:CreateTexture()
-      tex:SetAtlas("Nzoth-tooltip-topper")
-      tex:SetAllPoints(st.head.cols[5])
-      tex:SetTexCoord(0.28, 0.72, 0, 1)
-   end
 
    local b1 = addon:CreateButton(_G.GUILD, f.content)
    b1:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 10)
@@ -444,64 +388,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    frame.container:Show()
 end
 
--- An edited version of the one from VotingFrame.lua
-function GroupGear:CorruptionCellOnEnter (player, cD)
-   -- Use cached data if available
-   if not self.corruptionEffects then
-      -- Cache some corruption related data
-      local corruptionEffects = _G.GetNegativeCorruptionEffectInfo()
-      table.sort(corruptionEffects, function(a, b)
-         return a.minCorruption < b.minCorruption
-      end)
-      self.corruptionEffects = corruptionEffects
-   end
-   local corruption = cD.corruption
-   local corruptionResistance = cD.corruptionResistance
-   local totalCorruption = cD.totalCorruption
-
-   if not corruption then return end
-   -- Setup corruption tooltip
-   GameTooltip:SetOwner(UIParent, "ANCHOR_CURSOR");
-   GameTooltip_SetBackdropStyle(GameTooltip, _G.GAME_TOOLTIP_BACKDROP_STYLE_CORRUPTED_ITEM);
-   GameTooltip:SetMinimumWidth(250);
-   GameTooltip:AddLine(addon:GetUnitClassColoredName(player))
-   GameTooltip:AddLine("")
-   GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_TOOLTIP_LINE, corruption, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
-   GameTooltip_AddColoredDoubleLine(GameTooltip, _G.CORRUPTION_RESISTANCE_TOOLTIP_LINE, corruptionResistance, _G.HIGHLIGHT_FONT_COLOR, _G.HIGHLIGHT_FONT_COLOR);
-   GameTooltip_AddColoredDoubleLine(GameTooltip, _G.TOTAL_CORRUPTION_TOOLTIP_LINE, totalCorruption, _G.CORRUPTION_COLOR, _G.CORRUPTION_COLOR)
-   GameTooltip_AddBlankLineToTooltip(GameTooltip);
-
-   for i, corruptionInfo in ipairs(self.corruptionEffects) do
-      if i > 1 then
-         GameTooltip_AddBlankLineToTooltip(GameTooltip);
-      end
-      local lastEffect = (corruptionInfo.minCorruption > totalCorruption);
-      GameTooltip_AddColoredLine(GameTooltip, _G.CORRUPTION_EFFECT_HEADER:format(corruptionInfo.name, corruptionInfo.minCorruption), lastEffect and _G.GRAY_FONT_COLOR or _G.HIGHLIGHT_FONT_COLOR);
-      GameTooltip_AddColoredLine(GameTooltip, corruptionInfo.description, lastEffect and _G.GRAY_FONT_COLOR or _G.CORRUPTION_COLOR, true, 10);
-      if lastEffect then
-         break;
-      end
-   end
-   GameTooltip:Show()
-end
-
-function GroupGear.SetCellCorruption (rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
-   local name = data[realrow].name
-   local corruption = data[realrow][column].corruptionData or {}
-   frame.text:SetText(corruption.totalCorruption or "")
-   if _G.CORRUPTION_COLOR then
-      frame.text:SetTextColor(_G.CORRUPTION_COLOR:GetRGBA())
-      -- Tooltip
-      frame:SetScript("OnEnter", function()
-         GroupGear:CorruptionCellOnEnter(name, corruption)
-      end)
-      frame:SetScript("OnLeave", function() addon:HideTooltip() end)
-   end
-   data[realrow][column].value = corruption.totalCorruption or ""
-end
-
 function GroupGear:EnchantCheck(item)
-   --addon:Debug("EnchantCheck for", item)
    if db.showMissingEnchants or db.showRareEnchants then
       local enchantID = select(4, addon:DecodeItemLink(item))
       if not enchantID or enchantID == 0 or enchantID == "" then
