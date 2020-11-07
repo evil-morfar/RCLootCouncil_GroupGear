@@ -1,3 +1,8 @@
+### v2.0.0
+---
+* Updated for Shadowlands and RCLootCouncil v3.0.
+* RCLootCouncil v3.0 brings support for gearing, meaning you can now see the gear of everyone with RCLootCouncil installed with GroupGear.
+
 ### v1.8.0 Classic Release
 ---
 * Ported to Classic
