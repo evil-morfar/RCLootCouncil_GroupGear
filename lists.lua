@@ -4,6 +4,11 @@ local GG = addon:GetModule("RCGroupGear")
 
 GG.Lists = {
    gems = {
+      -- Shadowlands
+      [173127] = "rare", -- Gem:Crit:16
+      [173128] = "rare", -- Gem:Haste:16
+      [173129] = "rare", -- Gem:Vers:16
+      [173130] = "rare", -- Gem:Mastery:16
 -- Battle for Azeroth
       [154126] = "rare", --Gem:Crit:40
       [154127] = "rare", --Gem:Haste:40
@@ -32,6 +37,47 @@ GG.Lists = {
 
    },
    enchants = {
+      -- Shadowlands
+      [172357] = "rare", -- Ring:Crit:12
+      [172358] = "rare", -- Ring:Haste:12
+      [172359] = "rare", -- Ring:Mastery:12
+      [172360] = "rare", -- Ring:Vers:12
+
+      [172361] = "rare", -- Ring:Crit:16
+      [172362] = "rare", -- Ring:Haste:16
+      [172363] = "rare", -- Ring:Mastery:16
+      [172364] = "rare", -- Ring:Vers:16
+
+      [172365] = "common", -- Weapon:Ascended Vigor
+      [172366] = "common", -- Weapon:Celestial Guidance
+      [172367] = "common", -- Weapon:Eternal Grace
+      [172368] = "common", -- Weapon:Sinful Revelation
+      [172370] = "common", -- Weapon:Lightless Force
+
+      [172920] = "rare", -- Weapon:Optical Target Embiggener
+      [172921] = "rare", -- Weapon:Infra-green Reflex Sight
+
+      [197659] = "rare", -- Chest:Eternal Skirmish
+      [197962] = "rare", -- Chest:Eternal Stats
+      [197715] = "rare", -- Chest:Eternal Bounds
+      [172418] = "rare", -- Chest:Eternal Bulwark
+      [177716] = "rare", -- Chest:Sacred Stats
+      [183738] = "rare", -- Chest:Eternal Insight
+
+      [172410] = "rare", -- Cloak:Fortified Speed
+      [172411] = "rare", -- Cloak:Fortified Avoidance
+      [172412] = "rare", -- Cloak:Fortified Leech
+      [177660] = "rare", -- Cloak:Soul Vitality
+
+      [172407] = "rare", -- Gloves:Str:10
+      [172408] = "rare", -- Gloves:Str:15
+
+      [172413] = "rare", -- Boots:Agi:10
+      [172419] = "rare", -- Boots:Agi:16
+
+      [172414] = "rare", -- Wrist:Int:10
+      [172415] = "rare", -- Wrist:Int:16
+
       -- BFA
       [5938] = "rare", --Ring:Crit:27
       [5939] = "rare", --Ring:Haste:27
@@ -89,9 +135,13 @@ GG.Lists = {
       [572] =  true,
       [1808] = true,
    },
-   enchantSlotIDs = { -- BfA has enchants on: rings, weapon
-      [11] = true,
-      [12] = true,
-      [16] = true,
+   enchantSlotIDs = {
+      [5] = true, -- Chest
+      [9] = true, -- Wrist
+      [11] = true, -- Ring1
+      [12] = true, -- Ring2
+      [15] = true, -- Back
+      [16] = true, -- Mainhand
+      [17] = true, -- Offhand
    },
 }

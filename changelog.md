@@ -2,6 +2,8 @@
 ---
 * Updated for Shadowlands and RCLootCouncil v3.0.
 * RCLootCouncil v3.0 brings support for gearing, meaning you can now see the gear of everyone with RCLootCouncil installed with GroupGear.
+* Added Covenant column for retail.
+* Updated gems and enchants for Shadowlands.
 
 ### v1.8.0 Classic Release
 ---

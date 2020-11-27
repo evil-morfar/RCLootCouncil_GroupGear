@@ -18,6 +18,7 @@ local num_display_gear = 16
 local registeredPlayers = {} -- names are stored in lowercase for consistency
 local db, viewMenuFrame
 local updateTimer -- Used to update the display when all items have been cached
+local covenantCache = {}
 
 
 function GroupGear:OnInitialize()
@@ -75,6 +76,10 @@ function GroupGear:SubPermanentComms()
          local player = Player:Get(sender)
          self:UpdateEntry (player, ilvl, guildRank)
          self:Update()
+      end,
+      cov = function(data, sender)
+         self:UpdateEntry(Player:Get(sender), nil, nil, nil, unpack(data))
+         self:Update()
       end
    })
 end
@@ -98,12 +103,14 @@ function GroupGear:SetupColumns ()
    else
          self.colNameToIndex.class = 1
          self.colNameToIndex.name = 2
-         self.colNameToIndex.ilvl = 3
-         self.colNameToIndex.gear = 4
-         self.colNameToIndex.refresh = 5
+         self.colNameToIndex.covenant = 3
+         self.colNameToIndex.ilvl = 4
+         self.colNameToIndex.gear = 5
+         self.colNameToIndex.refresh = 6
       return {
          { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
          { name = _G.NAME, width = 120}, -- Player name
+         { name = "Covenant", width = 50, align = "CENTER", DoCellUpdate = GroupGear.SetCellCovenant}, -- Covenant
          { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
          { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
          { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
@@ -145,6 +152,7 @@ end
 function GroupGear:SendQueryRequests (target)
    addon:Send(target, "playerInfoRequest")
    addon:Send(target, "Rgear")
+   addon:Send(target, "getCov")
 end
 
 function GroupGear:Query(method)
@@ -170,8 +178,8 @@ end
 function GroupGear:GetAverageItemLevel()
    local ilvl, num = 0, 0
    for i = 1, #self.frame.rows do
-      if self.frame.rows[i][3].value ~= 0 then
-         ilvl = ilvl + self.frame.rows[i][3].value
+      if self.frame.rows[i][self.colNameToIndex.ilvl].value ~= 0 then
+         ilvl = ilvl + self.frame.rows[i][self.colNameToIndex.ilvl].value
          num = num + 1
       end
    end
@@ -186,12 +194,13 @@ function GroupGear:Refresh()
    self.frame.avgilvl:SetText(ilvl and "Average ilvl: "..ilvl or "")
 end
 
-function GroupGear:UpdateEntry (player, ilvl, rank, gear)
+function GroupGear:UpdateEntry (player, ilvl, rank, gear, covenantID)
    local name = player:GetName()
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
       if ilvl and ilvl ~= 0 then self.frame.rows[row][self.colNameToIndex.ilvl].value = addon.round(ilvl, 2) end
       if gear and #gear > 0 then self.frame.rows[row][self.colNameToIndex.gear].gear = gear end
+      if covenantID then self.frame.rows[row][self.colNameToIndex.covenant].value = covenantID end
       self.Log:D("UpdateEntry", name, row)
    end
 end
@@ -205,7 +214,7 @@ function GroupGear:InitEntry (player)
          {
             {args = {class} },
             {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-            --   {value = guildRank or "Unknown"},
+            {value = 0},
             {value = 0, DoCellUpdate = GroupGear.SetCellIlvl},
             {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = {}},
             {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
@@ -301,6 +310,40 @@ function GroupGear:GetFrame()
    return f
 end
 
+local getCovenantData = function (id)
+   if covenantCache[id] then return covenantCache[id] end
+   if not C_Covenants then return nil end
+   local data = C_Covenants.GetCovenantData(id)
+   covenantCache[id] = data
+   return data
+end
+
+function GroupGear.SetCellCovenant(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
+   local covenantID = data[realrow][column].value
+
+   if not covenantID or covenantID == 0 then
+      if frame.tex then
+         frame.tex:Hide()
+      end
+      frame.text:SetText(_G.NONE)
+      return
+   end
+   local data = getCovenantData(covenantID)
+   if not data then return end -- Failsafe
+   if not frame.tex then
+      frame.tex = frame:CreateTexture()
+      local width = frame:GetWidth()
+      --frame.tex:SetAllPoints(frame)
+      frame.tex:SetPoint("TOPLEFT", frame, "TOPLEFT", width / 4, 0)
+      frame.tex:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -width / 4, 0)
+      function frame.tex.GetObjectType () return "Texture" end -- Needed in TextureUtil with below call
+   end
+   SetupTextureKitOnFrame(data.textureKit, frame.tex, "CovenantChoice-Celebration-%sSigil",TextureKitConstants.SetVisibility, TextureKitConstants.UseAtlasSize)
+   frame:SetScript("OnEnter", function() addon:CreateTooltip(data.name) end)
+   frame:SetScript("OnLeave", function() addon:HideTooltip() end)
+   frame.text:SetText("")
+end
+
 function GroupGear.SetCellIlvl(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local ilvl = data[realrow][column].value
    ilvl = ilvl == 0 and "-" or ilvl
@@ -358,8 +401,8 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       return f
    end
    if not frame.container then frame.container = create() end
-   if gear == nil then -- Gear might not be received yet
-      if data[realrow][3].value == 0 then -- no ilvl either = no RCLootCouncil
+   if gear == nil or #gear == 0 then -- Gear might not be received yet
+      if data[realrow][GroupGear.colNameToIndex.ilvl].value == 0 then -- no ilvl either = no RCLootCouncil
          frame.text:SetText("No RCLootCouncil")
       else -- No GroupGear
          frame.text:SetText("No GroupGear")
@@ -381,7 +424,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       gearFrame.ilvl:SetText(ilvl)
       local r, g, b = GetItemQualityColor(quality or 1)
       gearFrame.ilvl:SetTextColor(r, g, b, 1)
-      GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i)
+      GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i, true)
    end
    frame.text:SetText("")
    data[realrow][column].value = "1"
