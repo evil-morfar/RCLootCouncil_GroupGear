@@ -1,6 +1,6 @@
 ## Author: Potdisc
 #@retail@
-## Interface: 90001
+## Interface: 90002
 ## Dependencies: RCLootCouncil
 #@end-retail@
 #@non-retail@
