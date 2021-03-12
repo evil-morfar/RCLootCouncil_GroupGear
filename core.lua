@@ -24,7 +24,7 @@ local covenantCache = {}
 function GroupGear:OnInitialize()
    self.Log = addon.Require "Log":New("GG")
    self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
-   self.tVersion = "Alpha.1"
+   self.tVersion = nil
    local defaults = {
       profile = {
          showMissingGems = true,
