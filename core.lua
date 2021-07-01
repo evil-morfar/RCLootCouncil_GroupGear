@@ -22,7 +22,7 @@ local covenantCache = {}
 
 
 function GroupGear:OnInitialize()
-   self.Log = addon.Require "Log":New("GG")
+   self.Log = addon.Require "Utils.Log":New("GG")
    self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
    self.tVersion = nil
    local defaults = {
