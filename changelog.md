@@ -1,3 +1,9 @@
+# v2.1.1
+
+## Changes
+
+Updated for patch 9.1.5.
+
 # v2.1.0
 
 ## Changes

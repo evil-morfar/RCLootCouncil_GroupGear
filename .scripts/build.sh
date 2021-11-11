@@ -13,6 +13,6 @@ mv ./.tmp/Retail/*.zip "./.release/"
 mv ./.tmp/Classic/*.zip "./.release/"
 #
 # # And delete .tmp
-rm -r "./.tmp"
+# rm -r "./.tmp"
 
 # read
