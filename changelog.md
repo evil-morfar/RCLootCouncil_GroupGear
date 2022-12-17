@@ -1,4 +1,8 @@
+# v2.2.0
+
 ## Changes
+
+Updated for Dragonflight.
 
 Removed Covenant column.
 
