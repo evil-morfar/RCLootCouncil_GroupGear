@@ -212,7 +212,7 @@ function GroupGear:InitEntry (player)
             {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
       })
       local index = #self.frame.rows
-      self.frame.rows[index].name = name
+      self.frame.rows[index].player = player
       self.Log:D("InitEntry", name, index)
       registeredPlayers[name:lower()] = index
 end
@@ -309,15 +309,15 @@ function GroupGear.SetCellIlvl(rowFrame, frame, data, cols, row, realrow, column
 end
 
 function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
-   local name = data[realrow][column].name
+   local player = data[realrow].player
    local f = frame.btn or CreateFrame("Button", nil, frame)
    f:SetPoint("CENTER", frame, "CENTER")
    f:SetSize(ROW_HEIGHT, ROW_HEIGHT)
    f:SetNormalTexture("Interface/BUTTONS/UI-RotationRight-Button-Up")
    f:SetPushedTexture("Interface/BUTTONS/UI-RotationRight-Button-Down")
    f:SetScript("OnClick", function()
-      addon:Send(name, "playerInfoRequest")
-      addon:Send(name, "groupGearRequest")
+      addon:Send(player, "playerInfoRequest")
+      addon:Send(player, "groupGearRequest")
    end)
    f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh")end)
    f:SetScript("OnLeave", function() addon:HideTooltip() end)
