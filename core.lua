@@ -2,8 +2,10 @@
 -- Custom module - Group Gear
 -- core.lua 	Adds a frame showing your groups gear based on the RCLootCouncil framework.
 
+--- @type RCLootCouncil
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
-GroupGear = addon:NewModule("RCGroupGear", "AceComm-3.0", "AceConsole-3.0", "AceTimer-3.0")
+--- @class GroupGear :  AceAddon-3.0, AceConsole-3.0, AceTimer-3.0
+GroupGear = addon:NewModule("RCGroupGear", "AceConsole-3.0", "AceTimer-3.0")
 -- local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local ST = LibStub("ScrollingTable")
 
@@ -20,6 +22,13 @@ local db, viewMenuFrame
 local updateTimer -- Used to update the display when all items have been cached
 
 
+--- @enum Queries
+GroupGear.Queries = {
+   guild = "guild",
+   group = "group",
+   cache = "cache"
+}
+
 function GroupGear:OnInitialize()
    self.Log = addon.Require "Utils.Log":New("GG")
    self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
@@ -30,6 +39,7 @@ function GroupGear:OnInitialize()
          showMissingEnchants = true,
          showRareGems = false,
          showRareEnchants = false,
+         cache = {},
       },
    }
 
@@ -68,6 +78,7 @@ function GroupGear:SubPermanentComms()
 
          self:UpdateEntry(player, nil, nil, gear)
          self:Update()
+         self:SetCache(player, nil, nil, gear)
       end,
 
       pI = function(data, sender, command, distri)
@@ -75,6 +86,7 @@ function GroupGear:SubPermanentComms()
          local player = Player:Get(sender)
          self:UpdateEntry (player, ilvl, guildRank)
          self:Update()
+         self:SetCache(player, ilvl, guildRank)
       end,
    })
 end
@@ -147,19 +159,31 @@ function GroupGear:SendQueryRequests (target)
    addon:Send(target, "Rgear")
 end
 
+--- @param method Queries
 function GroupGear:Query(method)
    self.frame.rows = {}
    registeredPlayers = {}
    -- Add our self
    -- self:AddEntry(self:GetGroupGearInfo())
-   if method == "group" then
+   if method == self.Queries.group then
       self:QueryGroup()
       self:SendQueryRequests(method)
-   elseif method == "guild" then
+   elseif method == self.Queries.guild then
       self:QueryGuild()
       self:SendQueryRequests(method)
+
+   elseif method == self.Queries.cache then
+      self:AddCachedPlayers()
    end
    self.frame.st:SetData(self.frame.rows, true)
+end
+function GroupGear:AddCachedPlayers()
+   local player
+   for guid, info in pairs(db.cache) do
+      player = Player:Get(guid)
+      self:InitEntry(player)
+      self:UpdateEntry(player, info.ilvl, info.rank, info.gear)
+   end
 end
 
 function GroupGear:Update()
@@ -193,6 +217,27 @@ function GroupGear:UpdateEntry (player, ilvl, rank, gear)
       if ilvl and ilvl ~= 0 then self.frame.rows[row][self.colNameToIndex.ilvl].value = addon.round(ilvl, 2) end
       if gear and #gear > 0 then self.frame.rows[row][self.colNameToIndex.gear].gear = gear end
       self.Log:D("UpdateEntry", name, row)
+   end
+end
+
+--- Adds/Updates the player info to the cache
+---@param player Player
+---@param ilvl? number
+---@param rank? string
+---@param gear? ItemLink[]
+function GroupGear:SetCache(player, ilvl, rank, gear)
+   -- Update if already exists
+   if db.cache[player:GetGUID()] then
+      local t = db.cache[player:GetGUID()]
+      t.ilvl = ilvl or t.ilvl
+      t.rank = rank or t.rank
+      t.gear = gear or t.gear
+   else
+      db.cache[player:GetGUID()] = {
+         ilvl = ilvl,
+         rank = rank,
+         gear = gear
+      }
    end
 end
 
@@ -263,13 +308,18 @@ function GroupGear:GetFrame()
 
    local b1 = addon:CreateButton(_G.GUILD, f.content)
    b1:SetPoint("BOTTOMLEFT", f, "BOTTOMLEFT", 10, 10)
-   b1:SetScript("OnClick", function() self:Query("guild") end)
+   b1:SetScript("OnClick", function() self:Query(self.Queries.guild) end)
    f.groupButton = b1
 
    local b2 = addon:CreateButton(_G.GROUP, f.content)
    b2:SetPoint("LEFT", b1, "RIGHT", 10, 0)
-   b2:SetScript("OnClick", function() self:Query("group") end)
+   b2:SetScript("OnClick", function() self:Query(self.Queries.group) end)
    f.guildButton = b2
+
+   local cacheBtn = addon:CreateButton("Cached", f.content)
+   cacheBtn:SetPoint("LEFT", b2, "RIGHT", 10, 0)
+   cacheBtn:SetScript("OnClick", function() self:Query(self.Queries.cache) end)
+   f.cacheBtn = cacheBtn
 
    local b3 = addon:CreateButton(_G.CLOSE, f.content)
    b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", - 10, 10)
@@ -278,7 +328,7 @@ function GroupGear:GetFrame()
 
    local b4 = CreateFrame("Button", nil, f.content)
    b4:SetSize(20, 20)
-   b4:SetPoint("LEFT", b2, "RIGHT", 8, 0)
+   b4:SetPoint("LEFT", cacheBtn, "RIGHT", 8, 0)
    b4:SetNormalTexture("Interface/MINIMAP/TRACKING/None")
    -- b4:SetBackdrop({
    --    bgFile = "Interface/Minimap/UI-Minimap-Background",

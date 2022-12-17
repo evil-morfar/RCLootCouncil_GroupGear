@@ -6,6 +6,10 @@ Updated for Dragonflight.
 
 Removed Covenant column.
 
+### Cache
+
+All queries are now cached, and can be brought up at any time by clicking the new "Cache" button.
+
 # v2.1.1
 
 ## Changes
