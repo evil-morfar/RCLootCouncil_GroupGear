@@ -236,20 +236,20 @@ function GroupGear.ViewMenu(menu, level)
       info.func = function() db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh() end
       MSA_DropDownMenu_AddButton(info, level)
 
-      info.text = "Highlight non-epic enchants"
-      info.checked = db.showRareEnchants
-      info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
-      MSA_DropDownMenu_AddButton(info, level)
+    --   info.text = "Highlight non-epic enchants"
+    --   info.checked = db.showRareEnchants
+    --   info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
+    --   MSA_DropDownMenu_AddButton(info, level)
 
       info.text = "Highlight missing gems"
       info.checked = db.showMissingGems
       info.func = function() db.showMissingGems = not db.showMissingGems; GroupGear:Refresh() end
       MSA_DropDownMenu_AddButton(info, level)
 
-      info.text = "Highlight non-epic gems"
-      info.checked = db.showRareGems
-      info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
-      MSA_DropDownMenu_AddButton(info, level)
+    --   info.text = "Highlight non-epic gems"
+    --   info.checked = db.showRareGems
+    --   info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
+    --   MSA_DropDownMenu_AddButton(info, level)
    end
 end
 
@@ -396,10 +396,10 @@ function GroupGear:EnchantCheck(item)
       local enchantID = select(4, addon:DecodeItemLink(item))
       if not enchantID or enchantID == 0 or enchantID == "" then
          return true
-      elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
-         return true
-      elseif db.showMissingEnchants then
-         return not self.Lists.enchants[enchantID]
+    --   elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
+    --      return true
+    --   elseif db.showMissingEnchants then
+    --      return not self.Lists.enchants[enchantID]
       end
    end
    return false
@@ -417,12 +417,12 @@ function GroupGear:GemCheck(item)
             end
          end
       end
-      -- Now see if we have a gem, and it's valid
-      if gemID1 and db.showRareGems and self.Lists.gems[gemID1] == "rare" then
-         return true
-      elseif gemID1 then
-         return not self.Lists.gems[gemID1]
-      end
+    --   -- Now see if we have a gem, and it's valid
+    --   if gemID1 and db.showRareGems and self.Lists.gems[gemID1] == "rare" then
+    --      return true
+    --   elseif gemID1 then
+    --      return not self.Lists.gems[gemID1]
+    --   end
    end
    return false
 end

@@ -134,6 +134,7 @@ GG.Lists = {
       [565] =  true,
       [572] =  true,
       [1808] = true,
+      [7935] = true,
    },
    enchantSlotIDs = {
       [5] = true, -- Chest
