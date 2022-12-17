@@ -1,3 +1,7 @@
+## Changes
+
+Removed Covenant column.
+
 # v2.1.1
 
 ## Changes

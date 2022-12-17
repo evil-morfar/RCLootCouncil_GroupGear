@@ -77,10 +77,6 @@ function GroupGear:SubPermanentComms()
          self:UpdateEntry (player, ilvl, guildRank)
          self:Update()
       end,
-      cov = function(data, sender)
-         self:UpdateEntry(Player:Get(sender), nil, nil, nil, unpack(data))
-         self:Update()
-      end
    })
 end
 
@@ -103,14 +99,12 @@ function GroupGear:SetupColumns ()
    else
          self.colNameToIndex.class = 1
          self.colNameToIndex.name = 2
-         self.colNameToIndex.covenant = 3
-         self.colNameToIndex.ilvl = 4
-         self.colNameToIndex.gear = 5
-         self.colNameToIndex.refresh = 6
+         self.colNameToIndex.ilvl = 3
+         self.colNameToIndex.gear = 4
+         self.colNameToIndex.refresh = 5
       return {
          { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
          { name = _G.NAME, width = 120}, -- Player name
-         { name = "Covenant", width = 50, align = "CENTER", DoCellUpdate = GroupGear.SetCellCovenant}, -- Covenant
          { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
          { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
          { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
@@ -152,7 +146,6 @@ end
 function GroupGear:SendQueryRequests (target)
    addon:Send(target, "playerInfoRequest")
    addon:Send(target, "Rgear")
-   addon:Send(target, "getCov")
 end
 
 function GroupGear:Query(method)
@@ -214,7 +207,6 @@ function GroupGear:InitEntry (player)
          {
             {args = {class} },
             {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-            {value = 0},
             {value = 0, DoCellUpdate = GroupGear.SetCellIlvl},
             {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = {}},
             {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
@@ -263,7 +255,7 @@ end
 
 function GroupGear:GetFrame()
    if self.frame then return self.frame end
-   local f = addon.UI:NewNamed("Frame", UIParent, "RCGroupGearFrame", "RCLootCouncil - Group Gear", 250)
+   local f = addon.UI:NewNamed("RCFrame", UIParent, "RCGroupGearFrame", "RCLootCouncil - Group Gear", 250)
 
    local st = ST:CreateST(self.scrollCols, 12, ROW_HEIGHT, nil, f.content)
    st.frame:SetPoint("TOPLEFT", f, "TOPLEFT", 10, - 35)
@@ -310,40 +302,6 @@ function GroupGear:GetFrame()
    return f
 end
 
-local getCovenantData = function (id)
-   if covenantCache[id] then return covenantCache[id] end
-   if not C_Covenants then return nil end
-   local data = C_Covenants.GetCovenantData(id)
-   covenantCache[id] = data
-   return data
-end
-
-function GroupGear.SetCellCovenant(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
-   local covenantID = data[realrow][column].value
-
-   if not covenantID or covenantID == 0 then
-      if frame.tex then
-         frame.tex:Hide()
-      end
-      frame.text:SetText(_G.NONE)
-      return
-   end
-   local data = getCovenantData(covenantID)
-   if not data then return end -- Failsafe
-   if not frame.tex then
-      frame.tex = frame:CreateTexture()
-      local width = frame:GetWidth()
-      --frame.tex:SetAllPoints(frame)
-      frame.tex:SetPoint("TOPLEFT", frame, "TOPLEFT", width / 4, 0)
-      frame.tex:SetPoint("BOTTOMRIGHT", frame, "BOTTOMRIGHT", -width / 4, 0)
-      function frame.tex.GetObjectType () return "Texture" end -- Needed in TextureUtil with below call
-   end
-   SetupTextureKitOnFrame(data.textureKit, frame.tex, "CovenantChoice-Celebration-%sSigil",TextureKitConstants.SetVisibility, TextureKitConstants.UseAtlasSize)
-   frame:SetScript("OnEnter", function() addon:CreateTooltip(data.name) end)
-   frame:SetScript("OnLeave", function() addon:HideTooltip() end)
-   frame.text:SetText("")
-end
-
 function GroupGear.SetCellIlvl(rowFrame, frame, data, cols, row, realrow, column, fShow, table, ...)
    local ilvl = data[realrow][column].value
    ilvl = ilvl == 0 and "-" or ilvl
@@ -358,8 +316,8 @@ function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, col
    f:SetNormalTexture("Interface/BUTTONS/UI-RotationRight-Button-Up")
    f:SetPushedTexture("Interface/BUTTONS/UI-RotationRight-Button-Down")
    f:SetScript("OnClick", function()
-      addon:SendCommand(name, "playerInfoRequest")
-      addon:SendCommand(name, "groupGearRequest")
+      addon:Send(name, "playerInfoRequest")
+      addon:Send(name, "groupGearRequest")
    end)
    f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh")end)
    f:SetScript("OnLeave", function() addon:HideTooltip() end)
