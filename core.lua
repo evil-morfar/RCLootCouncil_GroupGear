@@ -18,7 +18,6 @@ local num_display_gear = 16
 local registeredPlayers = {} -- names are stored in lowercase for consistency
 local db, viewMenuFrame
 local updateTimer -- Used to update the display when all items have been cached
-local covenantCache = {}
 
 
 function GroupGear:OnInitialize()
@@ -187,13 +186,12 @@ function GroupGear:Refresh()
    self.frame.avgilvl:SetText(ilvl and "Average ilvl: "..ilvl or "")
 end
 
-function GroupGear:UpdateEntry (player, ilvl, rank, gear, covenantID)
+function GroupGear:UpdateEntry (player, ilvl, rank, gear)
    local name = player:GetName()
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
       if ilvl and ilvl ~= 0 then self.frame.rows[row][self.colNameToIndex.ilvl].value = addon.round(ilvl, 2) end
       if gear and #gear > 0 then self.frame.rows[row][self.colNameToIndex.gear].gear = gear end
-      if covenantID then self.frame.rows[row][self.colNameToIndex.covenant].value = covenantID end
       self.Log:D("UpdateEntry", name, row)
    end
 end
