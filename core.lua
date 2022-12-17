@@ -377,7 +377,9 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
             updateTimer = GroupGear:ScheduleTimer(GroupGear.Refresh, 2, GroupGear)
          end
       end
-      gearFrame:SetNormalTexture(texture)
+	  if texture then
+		gearFrame:SetNormalTexture(texture)
+	  end
 
       gearFrame.ilvl:SetText(ilvl)
       local r, g, b = GetItemQualityColor(quality or 1)
