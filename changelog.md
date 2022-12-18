@@ -10,6 +10,10 @@ Removed Covenant column.
 
 All queries are now cached, and can be brought up at any time by clicking the new "Cache" button.
 
+## Bugfixes
+
+- *Will now show gear for people without a headpiece.*
+
 # v2.1.1
 
 ## Changes

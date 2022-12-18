@@ -218,7 +218,7 @@ function GroupGear:UpdateEntry (player, ilvl, rank, gear)
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
       if ilvl and ilvl ~= 0 then self.frame.rows[row][self.colNameToIndex.ilvl].value = addon.round(ilvl, 2) end
-      if gear and #gear > 0 then self.frame.rows[row][self.colNameToIndex.gear].gear = gear end
+      if gear and next(gear) then self.frame.rows[row][self.colNameToIndex.gear].gear = gear end
       self.Log:D("UpdateEntry", name, row)
    end
 end
@@ -410,7 +410,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       return f
    end
    if not frame.container then frame.container = create() end
-   if gear == nil or #gear == 0 then -- Gear might not be received yet
+   if gear == nil or not next(gear) then -- Gear might not be received yet
       if data[realrow][GroupGear.colNameToIndex.ilvl].value == 0 then -- no ilvl either = no RCLootCouncil
          frame.text:SetText("No RCLootCouncil")
       else -- No GroupGear
