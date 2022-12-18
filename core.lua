@@ -18,7 +18,7 @@ local ROW_HEIGHT = 20
 local num_display_gear = 16
 
 local registeredPlayers = {} -- names are stored in lowercase for consistency
-local db, viewMenuFrame
+local db, viewMenuFrame, cacheDB
 local updateTimer -- Used to update the display when all items have been cached
 
 
@@ -39,13 +39,16 @@ function GroupGear:OnInitialize()
          showMissingEnchants = true,
          showRareGems = false,
          showRareEnchants = false,
-         cache = {},
       },
+      factionrealm = {
+         cache = {},
+      }
    }
 
    self.db = LibStub("AceDB-3.0"):New("RCGroupGearDB", defaults, true)
 
    db = self.db.profile
+   cacheDB = self.db.factionrealm.cache
 
    viewMenuFrame = _G.MSA_DropDownMenu_Create("RCLootCouncil_GroupGear_ViewMenu", UIParent)
    _G.MSA_DropDownMenu_Initialize(viewMenuFrame, self.ViewMenu, "MENU")
@@ -179,7 +182,7 @@ function GroupGear:Query(method)
 end
 function GroupGear:AddCachedPlayers()
    local player
-   for guid, info in pairs(db.cache) do
+   for guid, info in pairs(cacheDB) do
       player = Player:Get(guid)
       self:InitEntry(player)
       self:UpdateEntry(player, info.ilvl, info.rank, info.gear)
@@ -227,13 +230,13 @@ end
 ---@param gear? ItemLink[]
 function GroupGear:SetCache(player, ilvl, rank, gear)
    -- Update if already exists
-   if db.cache[player:GetGUID()] then
-      local t = db.cache[player:GetGUID()]
+   if cacheDB[player:GetGUID()] then
+      local t = cacheDB[player:GetGUID()]
       t.ilvl = ilvl or t.ilvl
       t.rank = rank or t.rank
       t.gear = gear or t.gear
    else
-      db.cache[player:GetGUID()] = {
+      cacheDB[player:GetGUID()] = {
          ilvl = ilvl,
          rank = rank,
          gear = gear
