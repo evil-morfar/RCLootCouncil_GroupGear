@@ -1,6 +1,6 @@
 ## Author: Potdisc
 #@retail@
-## Interface: 100002
+## Interface: 100007
 ## Dependencies: RCLootCouncil
 #@end-retail@
 #@version-classic@
@@ -13,7 +13,7 @@
 #@end-version-wrath@
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
 ## Title: RCLootCouncil - Group Gear
-## Version: 2.2.0
+## Version: 2.2.1
 ## SavedVariables: RCGroupGearDB
 ## X-Curse-Project-ID: 102435
 
