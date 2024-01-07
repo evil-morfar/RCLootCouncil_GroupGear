@@ -1,3 +1,9 @@
+# v2.3.0
+
+## Changes
+
+Updated for patch 10.2.0.
+
 # v2.2.1
 
 ## Changes
