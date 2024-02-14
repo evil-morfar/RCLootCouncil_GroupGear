@@ -128,13 +128,36 @@ GG.Lists = {
       [6150] = "epic", --Weapon:NagaHide
 
    },
+   -- See ParentItemBonusListID https://wago.tools/db2/ItemBonus?filter[Value_1]=7&filter[Type]=6&sort[ParentItemBonusListID]=asc
    socketsBonusIDs = {
+      [523] =  true,
       [563] =  true,
       [564] =  true,
       [565] =  true,
       [572] =  true,
+      [608] =  true,
       [1808] = true,
+      [3475] = true,
+      [3522] = true,
+      [4802] = true,
+      [6514] = true,
+      [6672] = true,
+      [6935] = true,
+      [7576] = true,
+      [7580] = true,
       [7935] = true,
+      [8289] = true,
+      [8780] = true,
+      [8781] = true,
+      [8782] = true,
+      [8810] = true,
+      [9413] = true,
+      [9436] = true,
+      [9438] = true,
+      [9516] = true,
+      [9610] = true,
+      [9611] = true,
+      [9612] = true,
    },
    enchantSlotIDs = {
       [5] = true, -- Chest

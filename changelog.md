@@ -1,3 +1,9 @@
+# v2.3.1
+
+## Changes
+
+Updated list of sockets to catch all missing gems.
+
 # v2.3.0
 
 ## Changes
