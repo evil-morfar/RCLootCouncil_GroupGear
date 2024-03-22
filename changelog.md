@@ -1,6 +1,8 @@
-# v2.3.1
+# v2.4.0
 
 ## Changes
+
+Updated for patch 10.2.6.
 
 Updated list of sockets to catch all missing gems.
 
