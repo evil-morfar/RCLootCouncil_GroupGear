@@ -31,7 +31,7 @@ GroupGear.Queries = {
 
 function GroupGear:OnInitialize()
    self.Log = addon.Require "Utils.Log":New("GG")
-   self.version = GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
+   self.version = C_AddOns.GetAddOnMetadata("RCLootCouncil_GroupGear", "Version")
    self.tVersion = nil
    local defaults = {
       profile = {
@@ -422,7 +422,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    -- Update icons/tooltips
    for i, gearFrame in ipairs(frame.container.gear) do
       gearFrame:SetScript("OnEnter", function() addon:CreateHypertip(gear[i]) end)
-      local _, _, quality, ilvl, _, _, _, _, _, texture = GetItemInfo(gear[i] or "")
+      local _, _, quality, ilvl, _, _, _, _, _, texture = C_Item.GetItemInfo(gear[i] or "")
       if (texture == nil or texture == "") and gear[i] then
          if GroupGear:TimeLeft(updateTimer) < 0.1 then -- Only 1 timer at a time (but it's usually not exactly 0 after a recent timer)
             updateTimer = GroupGear:ScheduleTimer(GroupGear.Refresh, 2, GroupGear)
@@ -433,7 +433,7 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
 	  end
 
       gearFrame.ilvl:SetText(ilvl)
-      local r, g, b = GetItemQualityColor(quality or 1)
+      local r, g, b = C_Item.GetItemQualityColor(quality or 1)
       gearFrame.ilvl:SetTextColor(r, g, b, 1)
       GroupGear:ColorizeItemBackdrop(gearFrame, gear[i], i, true)
    end
