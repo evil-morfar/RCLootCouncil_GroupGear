@@ -8,12 +8,18 @@ jobs:
   build:
     runs-on: ubuntu-latest
     steps:
-    - uses: actions/checkout@v2
+    - name: Checkout
+      uses: actions/checkout@v3
+      
     - name: Install and run luacheck
       run: |
         sudo apt-get install luarocks
         luarocks install --local luacheck
         /home/runner/.luarocks/bin/luacheck . -q
+
+    - name: Create changelog
+      # Grabs everything under the top level # header and outputs to a new file
+      run: sed -n "3,/^# / {/^# /d; p}" changelog.md > changes.md
 
     - name: Build Retail Addon
       run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
