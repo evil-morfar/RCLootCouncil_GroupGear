@@ -1,3 +1,11 @@
+# v2.5.0
+
+Updated for patch 11.0.0
+
+## Bugfixes
+
+- *Once again shows offhand items.*
+
 # v2.4.1
 
 ## Changes

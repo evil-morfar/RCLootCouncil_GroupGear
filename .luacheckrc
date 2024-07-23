@@ -2711,6 +2711,7 @@ globals = {
 	"C_Item.GetItemFamily",
 	"C_Item.GetItemGem",
 	"C_Item.GetItemIcon",
+	"GetItemInfo",
 	"C_Item.GetItemInfoInstant",
 	"C_Item.GetItemInventorySlotInfo",
 	"GetItemLevelColor",

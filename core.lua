@@ -15,7 +15,7 @@ local Comms = addon.Require "Services.Comms"
 local Player = addon.Require "Data.Player"
 
 local ROW_HEIGHT = 20
-local num_display_gear = 16
+local num_display_gear = 17
 
 local registeredPlayers = {} -- names are stored in lowercase for consistency
 local db, viewMenuFrame, cacheDB
@@ -432,6 +432,12 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
 		gearFrame:SetNormalTexture(texture)
 	  end
 
+     if not gear[i] then
+         gearFrame:Hide()
+     else
+         gearFrame:Show()
+     end
+
       gearFrame.ilvl:SetText(ilvl)
       local r, g, b = C_Item.GetItemQualityColor(quality or 1)
       gearFrame.ilvl:SetTextColor(r, g, b, 1)
@@ -446,6 +452,10 @@ function GroupGear:EnchantCheck(item)
    if db.showMissingEnchants or db.showRareEnchants then
       local enchantID = select(4, addon:DecodeItemLink(item))
       if not enchantID or enchantID == 0 or enchantID == "" then
+         local class, subclass = select(12, C_Item.GetItemInfo(item))
+         if class == Enum.ItemClass.Armor and (subclass == Enum.ItemArmorSubclass.Generic or subclass > Enum.ItemArmorSubclass.Plate) then
+            return false
+         end
          return true
     --   elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
     --      return true
@@ -479,7 +489,7 @@ function GroupGear:GemCheck(item)
 end
 
 function GroupGear:ColorizeItemBackdrop(frame, item, slotID, noGGCompensation)
-   if not item then return end
+   if not item then return frame.overlay:Hide() end
    if not noGGCompensation and slotID >= 4 then slotID = slotID + 1 end -- Convert back to the "real" slotID's (we skipped the shirt; 4)
    local colorize = false
    -- Need enchants on: Rings, weapons
