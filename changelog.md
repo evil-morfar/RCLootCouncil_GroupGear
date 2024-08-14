@@ -1,3 +1,7 @@
+# v2.5.1
+
+Updated for patch 11.0.2
+
 # v2.5.0
 
 Updated for patch 11.0.0
