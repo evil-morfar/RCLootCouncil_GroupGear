@@ -2,5 +2,8 @@
     "todo-tree.tree.showCountsInTree": false,
     "Lua.runtime.path": [
         "${workspace}/__tests/?.lua"
+    ],
+    "Lua.diagnostics.globals": [
+        "lfs"
     ]
 }
