@@ -4,6 +4,24 @@
         "${workspace}/__tests/?.lua"
     ],
     "Lua.diagnostics.globals": [
-        "lfs"
+        "lfs",
+        "ChatFrame_AddMessageEventFilter",
+        "Settings",
+        "SettingsPanel",
+        "CLASS_ICON_TCOORDS",
+        "FindValueInTableIf",
+        "CreateSimpleTextureMarkup",
+        "escapePatternSymbols",
+        "ITEM_ACCOUNTBOUND_UNTIL_EQUIP",
+        "PLAYER_LIST_DELIMITER",
+        "BIND_TRADE_TIME_REMAINING",
+        "ITEM_BNETACCOUNTBOUND",
+        "LIST_DELIMITER",
+        "ITEM_SOULBOUND",
+        "ITEM_ACCOUNTBOUND",
+        "INT_SPELL_DURATION_SEC",
+        "INT_SPELL_DURATION_HOURS",
+        "TIME_UNIT_DELIMITER",
+        "INT_SPELL_DURATION_MIN"
     ]
 }
