@@ -22,6 +22,21 @@
         "INT_SPELL_DURATION_SEC",
         "INT_SPELL_DURATION_HOURS",
         "TIME_UNIT_DELIMITER",
-        "INT_SPELL_DURATION_MIN"
+        "INT_SPELL_DURATION_MIN",
+        "INVSLOT_LAST_EQUIPPED",
+        "RAID_CLASS_COLORS",
+        "UIParent",
+        "WOW_PROJECT_MAINLINE",
+        "WOW_PROJECT_ID",
+        "GameTooltip",
+        "getglobal",
+        "tIndexOf",
+        "tInvert",
+        "GetClassColorObj",
+        "tContains",
+        "Item",
+        "CreateAtlasMarkup",
+        "tCompare",
+        "GetUnitName"
     ]
 }
