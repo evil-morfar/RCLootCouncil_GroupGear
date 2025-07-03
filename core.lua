@@ -5,7 +5,7 @@
 --- @type RCLootCouncil
 local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
 --- @class GroupGear :  AceAddon-3.0, AceConsole-3.0, AceTimer-3.0
-GroupGear = addon:NewModule("RCGroupGear", "AceConsole-3.0", "AceTimer-3.0")
+local GroupGear = addon:NewModule("RCGroupGear", "AceConsole-3.0", "AceTimer-3.0")
 -- local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
 local ST = LibStub("ScrollingTable")
 
@@ -19,7 +19,7 @@ local num_display_gear = 17
 
 local registeredPlayers = {} -- names are stored in lowercase for consistency
 local db, viewMenuFrame, cacheDB
-local updateTimer -- Used to update the display when all items have been cached
+local updateTimer            -- Used to update the display when all items have been cached
 
 
 --- @enum Queries
@@ -58,7 +58,8 @@ end
 
 function GroupGear:OnEnable()
    self.Log("GroupGear", self.version, "enabled")
-   addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear", "gear")
+   addon:ModuleChatCmd(self, "Show", nil, "Show the GroupGear window (alt. 'groupgear' or 'gear')", "gg", "groupgear",
+      "gear")
 
    self.colNameToIndex = {}
    self.scrollCols = self:SetupColumns()
@@ -71,11 +72,11 @@ end
 
 function GroupGear:SubPermanentComms()
    Comms:BulkSubscribe(addon.PREFIXES.MAIN, {
-      gear = function (data, sender)
+      gear = function(data, sender)
          local player = Player:Get(sender)
          local gear = unpack(data)
          -- Gear needs to be "Uncleaned"
-         for k,v in pairs(gear) do
+         for k, v in pairs(gear) do
             gear[k] = addon.Utils:UncleanItemString(v)
          end
 
@@ -87,43 +88,26 @@ function GroupGear:SubPermanentComms()
       pI = function(data, sender, command, distri)
          local _, guildRank, _, _, ilvl = unpack(data)
          local player = Player:Get(sender)
-         self:UpdateEntry (player, ilvl, guildRank)
+         self:UpdateEntry(player, ilvl, guildRank)
          self:Update()
          self:SetCache(player, ilvl, guildRank)
       end,
    })
 end
 
-function GroupGear:SetupColumns ()
-   if addon.isClassic then
-         self.colNameToIndex.class = 1
-         self.colNameToIndex.name = 2
-         self.colNameToIndex.rank = 3
-         self.colNameToIndex.ilvl = 4
-         self.colNameToIndex.gear = 5
-         self.colNameToIndex.refresh = 6
-      return {
-         { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
-         { name = _G.NAME, width = 120}, -- Player name
-         { name = _G.RANK, width = 100}, -- Guild rank
-         { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
-         { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
-         { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
-      }
-   else
-         self.colNameToIndex.class = 1
-         self.colNameToIndex.name = 2
-         self.colNameToIndex.ilvl = 3
-         self.colNameToIndex.gear = 4
-         self.colNameToIndex.refresh = 5
-      return {
-         { name = "", width = 20, DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
-         { name = _G.NAME, width = 120}, -- Player name
-         { name = _G.ITEM_LEVEL_ABBR, width = 55, align = "CENTER"}, -- ilvl
-         { name = "Gear", width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER", sortnext = 3 }, -- Gear
-         { name = "", width = 20, DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
-      }
-   end
+function GroupGear:SetupColumns()
+   self.colNameToIndex.class = 1
+   self.colNameToIndex.name = 2
+   self.colNameToIndex.ilvl = 3
+   self.colNameToIndex.gear = 4
+   self.colNameToIndex.refresh = 5
+   return {
+      { name = "",                 width = 20,                                               DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
+      { name = _G.NAME,            width = 120 },                                                                     -- Player name
+      { name = _G.ITEM_LEVEL_ABBR, width = 55,                                               align = "CENTER" },      -- ilvl
+      { name = "Gear",             width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",                        sortnext = 3 }, -- Gear
+      { name = "",                 width = 20,                                               DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
+   }
 end
 
 function GroupGear:Show()
@@ -150,14 +134,14 @@ end
 
 function GroupGear:QueryGuild()
    for i = 1, GetNumGuildMembers() do
-      local _, _, _, _, _, _, _, _, online, _, _, _, _, _, _,_, guid = GetGuildRosterInfo(i)
+      local _, _, _, _, _, _, _, _, online, _, _, _, _, _, _, _, guid = GetGuildRosterInfo(i)
       if online then
          self:InitEntry(Player:Get(guid))
       end
    end
 end
 
-function GroupGear:SendQueryRequests (target)
+function GroupGear:SendQueryRequests(target)
    addon:Send(target, "playerInfoRequest")
    addon:Send(target, "Rgear")
 end
@@ -174,12 +158,12 @@ function GroupGear:Query(method)
    elseif method == self.Queries.guild then
       self:QueryGuild()
       self:SendQueryRequests(method)
-
    elseif method == self.Queries.cache then
       self:AddCachedPlayers()
    end
    self.frame.st:SetData(self.frame.rows, true)
 end
+
 function GroupGear:AddCachedPlayers()
    local player
    for guid, info in pairs(cacheDB) do
@@ -210,10 +194,10 @@ function GroupGear:Refresh()
    self.frame.st:SortData()
    -- Calculate total ilvl
    local ilvl = self:GetAverageItemLevel()
-   self.frame.avgilvl:SetText(ilvl and "Average ilvl: "..ilvl or "")
+   self.frame.avgilvl:SetText(ilvl and "Average ilvl: " .. ilvl or "")
 end
 
-function GroupGear:UpdateEntry (player, ilvl, rank, gear)
+function GroupGear:UpdateEntry(player, ilvl, rank, gear)
    local name = player:GetName()
    if self:IsPlayerRegistered(name) then -- Update
       local row = registeredPlayers[name:lower()]
@@ -244,23 +228,23 @@ function GroupGear:SetCache(player, ilvl, rank, gear)
    end
 end
 
-function GroupGear:InitEntry (player)
+function GroupGear:InitEntry(player)
    if not self.frame then return end
    local name = player:GetName()
    local class = player:GetClass()
    tinsert(self.frame.rows,
       -- Retail
-         {
-            {args = {class} },
-            {value = addon.Ambiguate(name), color = addon:GetClassColor(class)},
-            {value = 0, DoCellUpdate = GroupGear.SetCellIlvl},
-            {value = "", DoCellUpdate = GroupGear.SetCellGear, gear = {}},
-            {value = "", DoCellUpdate = GroupGear.SetCellRefresh, name = name},
+      {
+         { args = { class } },
+         { value = addon.Ambiguate(name), color = addon:GetClassColor(class) },
+         { value = 0,                     DoCellUpdate = GroupGear.SetCellIlvl },
+         { value = "",                    DoCellUpdate = GroupGear.SetCellGear,    gear = {} },
+         { value = "",                    DoCellUpdate = GroupGear.SetCellRefresh, name = name },
       })
-      local index = #self.frame.rows
-      self.frame.rows[index].player = player
-      self.Log:D("InitEntry", name, index)
-      registeredPlayers[name:lower()] = index
+   local index = #self.frame.rows
+   self.frame.rows[index].player = player
+   self.Log:D("InitEntry", name, index)
+   registeredPlayers[name:lower()] = index
 end
 
 function GroupGear:IsPlayerRegistered(name)
@@ -279,23 +263,27 @@ function GroupGear.ViewMenu(menu, level)
       info = MSA_DropDownMenu_CreateInfo()
       info.text = "Highlight missing enchants"
       info.checked = db.showMissingEnchants
-      info.func = function() db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh() end
+      info.func = function()
+         db.showMissingEnchants = not db.showMissingEnchants; GroupGear:Refresh()
+      end
       MSA_DropDownMenu_AddButton(info, level)
 
-    --   info.text = "Highlight non-epic enchants"
-    --   info.checked = db.showRareEnchants
-    --   info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
-    --   MSA_DropDownMenu_AddButton(info, level)
+      --   info.text = "Highlight non-epic enchants"
+      --   info.checked = db.showRareEnchants
+      --   info.func = function() db.showRareEnchants = not db.showRareEnchants; GroupGear:Refresh() end
+      --   MSA_DropDownMenu_AddButton(info, level)
 
       info.text = "Highlight missing gems"
       info.checked = db.showMissingGems
-      info.func = function() db.showMissingGems = not db.showMissingGems; GroupGear:Refresh() end
+      info.func = function()
+         db.showMissingGems = not db.showMissingGems; GroupGear:Refresh()
+      end
       MSA_DropDownMenu_AddButton(info, level)
 
-    --   info.text = "Highlight non-epic gems"
-    --   info.checked = db.showRareGems
-    --   info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
-    --   MSA_DropDownMenu_AddButton(info, level)
+      --   info.text = "Highlight non-epic gems"
+      --   info.checked = db.showRareGems
+      --   info.func = function() db.showRareGems = not db.showRareGems; GroupGear:Refresh() end
+      --   MSA_DropDownMenu_AddButton(info, level)
    end
 end
 
@@ -304,7 +292,7 @@ function GroupGear:GetFrame()
    local f = addon.UI:NewNamed("RCFrame", UIParent, "RCGroupGearFrame", "RCLootCouncil - Group Gear", 250)
 
    local st = ST:CreateST(self.scrollCols, 12, ROW_HEIGHT, nil, f.content)
-   st.frame:SetPoint("TOPLEFT", f, "TOPLEFT", 10, - 35)
+   st.frame:SetPoint("TOPLEFT", f, "TOPLEFT", 10, -35)
    f:SetWidth(st.frame:GetWidth() + 20)
    f.rows = {}
    f.st = st
@@ -325,7 +313,7 @@ function GroupGear:GetFrame()
    f.cacheBtn = cacheBtn
 
    local b3 = addon:CreateButton(_G.CLOSE, f.content)
-   b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", - 10, 10)
+   b3:SetPoint("BOTTOMRIGHT", f, "BOTTOMRIGHT", -10, 10)
    b3:SetScript("OnClick", function() self:Hide() end)
    f.closeButton = b3
 
@@ -338,7 +326,7 @@ function GroupGear:GetFrame()
    --    --bgFile = "Interface/Minimap/Minimap-TrackingBorder",
    -- })
    b4:SetHighlightTexture("Interface\\Minimap\\UI-Minimap-ZoomButton-Highlight")
-   b4:SetScript("OnClick", function(this) MSA_ToggleDropDownMenu(1, nil, viewMenuFrame, this, 0, 0) end )
+   b4:SetScript("OnClick", function(this) MSA_ToggleDropDownMenu(1, nil, viewMenuFrame, this, 0, 0) end)
    -- b4.border = b4:CreateTexture()
    -- b4.border:SetTexture("Interface/Minimap/Minimap-TrackingBorder")
    -- b4.border:SetSize(44,44)
@@ -370,7 +358,7 @@ function GroupGear.SetCellRefresh(rowFrame, frame, data, cols, row, realrow, col
       addon:Send(player, "playerInfoRequest")
       addon:Send(player, "groupGearRequest")
    end)
-   f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh")end)
+   f:SetScript("OnEnter", function() addon:CreateTooltip("Refresh") end)
    f:SetScript("OnLeave", function() addon:HideTooltip() end)
    frame.btn = f
 end
@@ -380,13 +368,13 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
    -- Function to create a frame containing the x num of gear frames
    local function create()
       frame.text:SetTextColor(.75, .75, .75, 1)
-      local f = CreateFrame("Frame", frame:GetName().."GearFrame", frame)
+      local f = CreateFrame("Frame", frame:GetName() .. "GearFrame", frame)
       f:SetPoint("LEFT", frame, "LEFT")
       f:SetSize(ROW_HEIGHT * num_display_gear + num_display_gear, ROW_HEIGHT)
       f.gear = {}
       -- Create the individual pieces' frame
       for i = 1, num_display_gear do
-         f.gear[i] = CreateFrame("Button", f:GetName()..i, f)
+         f.gear[i] = CreateFrame("Button", f:GetName() .. i, f)
          if i == 1 then
             f.gear[i]:SetPoint("LEFT", f, "LEFT", 0, 0)
          else
@@ -410,10 +398,10 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
       return f
    end
    if not frame.container then frame.container = create() end
-   if gear == nil or not next(gear) then -- Gear might not be received yet
+   if gear == nil or not next(gear) then                              -- Gear might not be received yet
       if data[realrow][GroupGear.colNameToIndex.ilvl].value == 0 then -- no ilvl either = no RCLootCouncil
          frame.text:SetText("No RCLootCouncil")
-      else -- No GroupGear
+      else                                                            -- No GroupGear
          frame.text:SetText("No GroupGear")
       end
       data[realrow][column].value = "0";
@@ -428,15 +416,15 @@ function GroupGear.SetCellGear(rowFrame, frame, data, cols, row, realrow, column
             updateTimer = GroupGear:ScheduleTimer(GroupGear.Refresh, 2, GroupGear)
          end
       end
-	  if texture then
-		gearFrame:SetNormalTexture(texture)
-	  end
+      if texture then
+         gearFrame:SetNormalTexture(texture)
+      end
 
-     if not gear[i] then
+      if not gear[i] then
          gearFrame:Hide()
-     else
+      else
          gearFrame:Show()
-     end
+      end
 
       gearFrame.ilvl:SetText(ilvl)
       local r, g, b = C_Item.GetItemQualityColor(quality or 1)
@@ -457,10 +445,10 @@ function GroupGear:EnchantCheck(item)
             return false
          end
          return true
-    --   elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
-    --      return true
-    --   elseif db.showMissingEnchants then
-    --      return not self.Lists.enchants[enchantID]
+         --   elseif db.showRareEnchants and self.Lists.enchants[enchantID] == "rare" then
+         --      return true
+         --   elseif db.showMissingEnchants then
+         --      return not self.Lists.enchants[enchantID]
       end
    end
    return false
@@ -478,12 +466,12 @@ function GroupGear:GemCheck(item)
             end
          end
       end
-    --   -- Now see if we have a gem, and it's valid
-    --   if gemID1 and db.showRareGems and self.Lists.gems[gemID1] == "rare" then
-    --      return true
-    --   elseif gemID1 then
-    --      return not self.Lists.gems[gemID1]
-    --   end
+      --   -- Now see if we have a gem, and it's valid
+      --   if gemID1 and db.showRareGems and self.Lists.gems[gemID1] == "rare" then
+      --      return true
+      --   elseif gemID1 then
+      --      return not self.Lists.gems[gemID1]
+      --   end
    end
    return false
 end

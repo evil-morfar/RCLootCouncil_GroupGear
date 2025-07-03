@@ -1,6 +1,11 @@
 ## Author: Potdisc
-## Interface: 110107
+## Interface: 110107, 11507, 50500
+#@retail@
 ## Dependencies: RCLootCouncil
+#@end-retail@
+#@non-retail@
+# ## Dependencies: RCLootCouncil_Classic
+#@end-non-retail@
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
 ## Title: RCLootCouncil - Group Gear
 ## Version: 2.6.2
