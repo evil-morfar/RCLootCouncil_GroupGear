@@ -8,7 +8,7 @@
 #@end-non-retail@
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
 ## Title: RCLootCouncil - Group Gear
-## Version: 2.6.2
+## Version: 2.7.0
 ## SavedVariables: RCGroupGearDB
 ## X-Curse-Project-ID: 102435
 

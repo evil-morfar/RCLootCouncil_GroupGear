@@ -1,3 +1,9 @@
+# 2.7.0
+
+## Classic
+
+This module now again works with Classic versions. Requires RCLootCouncil Classic v1.0.0 or newer.
+
 # 2.6.2
 
 Updated for patch 11.1.7.
