@@ -27,8 +27,8 @@ jobs:
         CF_API_KEY: ${{ secrets.CF_API_KEY }}
         GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
-    # - name: Build Classic Addon
-    #   run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.4
-    #   env:
-    #     CF_API_KEY: ${{ secrets.CF_API_KEY }}
-    #     GITHUB_OAUTH: ${{ secrets.GHUB_OAUTH }}
+    - name: Build Classic Addon
+      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.4
+      env:
+        CF_API_KEY: ${{ secrets.CF_API_KEY }}
+        GITHUB_OAUTH: ${{ secrets.GHUB_OAUTH }}

@@ -12,7 +12,11 @@ echo "Executing $0" >&2
 # Process command-line options
 usage() {
 	echo "Usage: test.sh [-cp]" >&2
-	echo "  -c               Pack to _classic_ WoW edition." >&2
+	echo "  -c               Pack to _classic_era_ WoW edition. (Classic)" >&2
+	echo "  -b               Pack to _classic_ WoW edition. (Prog)" >&2
+	echo "  -d               Pack to _classic_beta_ WoW edition." >&2
+	echo "  -z               Pack to _classic_ptr_ WoW edition. (Prog PTR)" >&2
+	echo "  -x               Pack to _classic_era_ptr_ WoW edition. (Classic PTR)" >&2
 	echo "  -p               Pack to _ptr_ WoW edition." >&2
 }
 
@@ -20,13 +24,24 @@ ADDON_LOC="$(pwd)"
 ADDON="$(basename $ADDON_LOC)"
 WOWEDITION="_retail_"
 is_classic=false
-
 # Commandline inputs
-while getopts ":cp" opt; do
+while getopts ":cbdzxp" opt; do
 	case $opt in
       c)
+         WOWEDITION="_classic_era_"
+         is_classic=true;;
+      b)
          WOWEDITION="_classic_"
-			is_classic=true;;
+         is_classic=true;;
+      d)
+         WOWEDITION="_classic_beta_"
+         is_classic=true;;
+      z)
+         WOWEDITION="_classic_ptr_"
+         is_classic=true;;
+      x)
+         WOWEDITION="_classic_era_ptr_"
+         is_classic=true;;
       p)
          WOWEDITION="_ptr_";;
       /?)
@@ -49,17 +64,17 @@ if [ -z "$WOW_LOCATION" ]; then
    exit;
 fi
 
-TEMP_DEST=".tmp/$ADDON"
+TEMP_DEST="$ADDON_LOC/.tmp/$ADDON/$WOWEDITION"
 DEST="$WOW_LOCATION$WOWEDITION/Interface/AddOns/$ADDON"
 
 # Copy to temp folder:
 # cp "$ADDON_LOC" "$TEMP_DEST" -ruv
-robocopy "$ADDON_LOC" "$TEMP_DEST" //s //purge //XD .* __* $(sed "s/^/  /" .gitignore) //XF ?.* __*
+robocopy "$ADDON_LOC" "$TEMP_DEST" //s //purge //XD .* __* $(sed "s/^/  /" .gitignore) //XF ?.* __* //NFL //NDL //NJH //NJS
 
 # Do file replacements.
 . "./.scripts/replace.sh" "$TEMP_DEST" "$is_classic"
 
-robocopy "$TEMP_DEST" "$DEST" //s //purge //XD .* __*  //XF ?.* __* //NFL //NDL //NJH
+robocopy "$TEMP_DEST" "$DEST" //s //purge //XD .* __*  //XF ?.* __* sed* //NFL //NDL //NJH
 
-rm -r ".tmp/"
-echo "Finished deploying $ADDON"
+rm -r "$TEMP_DEST"
+echo "Finished deploying $ADDON classic: $is_classic"

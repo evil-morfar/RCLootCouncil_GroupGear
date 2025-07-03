@@ -38,5 +38,20 @@
         "CreateAtlasMarkup",
         "tCompare",
         "GetUnitName"
+    ],
+    "Lua.runtime.version": "Lua 5.1",
+    "Lua.runtime.builtin": {
+        "basic": "enable",
+        "debug": "enable",
+        "io": "enable",
+        "math": "enable",
+        "os": "enable",
+        "package": "enable",
+        "string": "enable",
+        "table": "enable",
+        "utf8": "enable"
+    },
+    "Lua.workspace.library": [
+        "~\\.vscode\\extensions\\ketho.wow-api-0.20.8\\Annotations\\Core"
     ]
 }
