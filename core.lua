@@ -8,7 +8,7 @@ local addon =
        WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
        and "RCLootCouncil"
        or "RCLootCouncil_Classic")
-       
+
 --- @class GroupGear :  AceAddon-3.0, AceConsole-3.0, AceTimer-3.0
 local GroupGear = addon:NewModule("RCGroupGear", "AceConsole-3.0", "AceTimer-3.0")
 -- local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")
@@ -107,11 +107,11 @@ function GroupGear:SetupColumns()
    self.colNameToIndex.gear = 4
    self.colNameToIndex.refresh = 5
    return {
-      { name = "",                 width = 20,                                               DoCellUpdate = addon.SetCellClassIcon, }, -- class icon
-      { name = _G.NAME,            width = 120 },                                                                     -- Player name
-      { name = _G.ITEM_LEVEL_ABBR, width = 55,                                               align = "CENTER" },      -- ilvl
+      { name = "",                 width = 20,                                               DoCellUpdate = addon.SetCellClassIcon, },                -- class icon
+      { name = _G.NAME,            width = 120 },                                                                                                     -- Player name
+      { name = _G.ITEM_LEVEL_ABBR, width = 55,                                               align = "CENTER" },                                      -- ilvl
       { name = "Gear",             width = ROW_HEIGHT * num_display_gear + num_display_gear, align = "CENTER",                        sortnext = 3 }, -- Gear
-      { name = "",                 width = 20,                                               DoCellUpdate = GroupGear.SetCellRefresh, }, -- Refresh icon
+      { name = "",                 width = 20,                                               DoCellUpdate = GroupGear.SetCellRefresh, },              -- Refresh icon
    }
 end
 
