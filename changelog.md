@@ -1,3 +1,9 @@
+# 2.7.1
+
+## Bugfixes
+
+- *Fixed Classic build causing errors.*
+
 # 2.7.0
 
 ## Classic
