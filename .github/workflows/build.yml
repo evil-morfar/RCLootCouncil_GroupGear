@@ -9,7 +9,7 @@ jobs:
     runs-on: ubuntu-latest
     steps:
     - name: Checkout
-      uses: actions/checkout@v3
+      uses: actions/checkout@v4
       
     - name: Install and run luacheck
       run: |
@@ -21,8 +21,8 @@ jobs:
       # Grabs everything under the top level # header and outputs to a new file
       run: sed -n "3,/^# / {/^# /d; p}" changelog.md > changes.md
 
-    - name: Build Addon
-      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
+    - name: Package and release
+      uses: BigWigsMods/packager@v2
       env:
         CF_API_KEY: ${{ secrets.CF_API_KEY }}
         GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
