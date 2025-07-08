@@ -1,5 +1,5 @@
 ## Author: Potdisc
-## Interface: 110107, 11507, 50500
+## Interface: 11507, 50500, 110107
 #@retail@
 ## Dependencies: RCLootCouncil
 #@end-retail@

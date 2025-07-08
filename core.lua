@@ -3,7 +3,12 @@
 -- core.lua 	Adds a frame showing your groups gear based on the RCLootCouncil framework.
 
 --- @type RCLootCouncil
-local addon = LibStub("AceAddon-3.0"):GetAddon("RCLootCouncil")
+local addon =
+    LibStub("AceAddon-3.0"):GetAddon(
+       WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+       and "RCLootCouncil"
+       or "RCLootCouncil_Classic")
+       
 --- @class GroupGear :  AceAddon-3.0, AceConsole-3.0, AceTimer-3.0
 local GroupGear = addon:NewModule("RCGroupGear", "AceConsole-3.0", "AceTimer-3.0")
 -- local L = LibStub("AceLocale-3.0"):GetLocale("RCLootCouncil")

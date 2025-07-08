@@ -22,13 +22,13 @@ jobs:
       run: sed -n "3,/^# / {/^# /d; p}" changelog.md > changes.md
 
     - name: Build Retail Addon
-      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
+      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g retail
       env:
         CF_API_KEY: ${{ secrets.CF_API_KEY }}
         GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
     - name: Build Classic Addon
-      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g 1.13.4
+      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g "1.15.7,5.5.0"
       env:
         CF_API_KEY: ${{ secrets.CF_API_KEY }}
-        GITHUB_OAUTH: ${{ secrets.GHUB_OAUTH }}
+        GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
