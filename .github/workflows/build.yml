@@ -21,14 +21,9 @@ jobs:
       # Grabs everything under the top level # header and outputs to a new file
       run: sed -n "3,/^# / {/^# /d; p}" changelog.md > changes.md
 
-    - name: Build Retail Addon
-      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g retail
+    - name: Build Addon
+      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash
       env:
         CF_API_KEY: ${{ secrets.CF_API_KEY }}
         GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}
 
-    - name: Build Classic Addon
-      run: curl -s https://raw.githubusercontent.com/BigWigsMods/packager/master/release.sh | bash -s -- -g "1.15.7,5.5.0"
-      env:
-        CF_API_KEY: ${{ secrets.CF_API_KEY }}
-        GITHUB_OAUTH: ${{ secrets.GITHUB_TOKEN }}

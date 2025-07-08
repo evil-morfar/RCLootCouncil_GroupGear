@@ -9,3 +9,4 @@ ignore:
     - .scripts
 
 enable-nolib-creation: no
+enable-toc-creation: yes
