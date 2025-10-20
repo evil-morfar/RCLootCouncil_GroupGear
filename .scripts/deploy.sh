@@ -11,7 +11,7 @@ echo "Executing $0" >&2
 
 # Process command-line options
 usage() {
-	echo "Usage: test.sh [-cp]" >&2
+	echo "Usage: test.sh [-cbdzxp]" >&2
 	echo "  -c               Pack to _classic_era_ WoW edition. (Classic)" >&2
 	echo "  -b               Pack to _classic_ WoW edition. (Prog)" >&2
 	echo "  -d               Pack to _classic_beta_ WoW edition." >&2
