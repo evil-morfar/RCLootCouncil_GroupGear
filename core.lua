@@ -218,6 +218,7 @@ end
 ---@param rank? string
 ---@param gear? ItemLink[]
 function GroupGear:SetCache(player, ilvl, rank, gear)
+   if not (player and player:GetGUID()) then return end
    -- Update if already exists
    if cacheDB[player:GetGUID()] then
       local t = cacheDB[player:GetGUID()]
