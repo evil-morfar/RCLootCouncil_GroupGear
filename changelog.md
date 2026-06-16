@@ -1,3 +1,7 @@
+# 2.8.2
+
+Updated for patch 12.0.7.
+
 # 2.8.1
 
 Updated for patch 12.0.5.
