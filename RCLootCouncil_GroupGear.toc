@@ -1,5 +1,5 @@
 ## Author: Potdisc
-## Interface: 120100
+## Interface: 120105
 ## Interface-Mists: 50504
 ## Interface-tbc: 20506
 ## Interface-Classic: 11509
@@ -11,7 +11,7 @@
 #@end-non-retail@
 ## Notes: An RCLootCouncil module for viewing your groups' gear.
 ## Title: RCLootCouncil - Group Gear
-## Version: 2.9.0
+## Version: 2.9.1
 ## SavedVariables: RCGroupGearDB
 ## X-Curse-Project-ID: 102435
 
