@@ -30,7 +30,8 @@
                 "Deploy Classic",
                 "Deploy Anniversary",
                 "Deploy Prog",
-                "Deploy"
+                "Deploy",
+                "Deploy Forever"
             ],
             "dependsOrder": "parallel",
             "hide": true
@@ -65,6 +66,12 @@
             "label": "Deploy",
             "type": "shell",
             "command": "sh .scripts/deploy.sh",
+        },
+        {
+            "label": "Deploy Forever",
+            "type": "shell",
+            "command": "sh .scripts/deploy.sh -f",
+            "group": "build"
         },
         {
             "label": "Deploy PTR",
@@ -109,5 +116,27 @@
             ],
             "hide": true
         },
+
+        {
+            "label": "New Release",
+            "type": "shell",
+            "command": "bash .scripts/release.sh",
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "focus": true
+            }
+        },
+        {
+            "label": "New Release (Dry Run)",
+            "type": "shell",
+            "command": "bash .scripts/release.sh --dry-run",
+            "args": [],
+            "problemMatcher": [],
+            "presentation": {
+                "reveal": "always",
+                "focus": true
+            }
+        }
     ]
 }

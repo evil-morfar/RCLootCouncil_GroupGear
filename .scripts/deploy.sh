@@ -11,11 +11,12 @@ echo "Executing $0" >&2
 
 # Process command-line options
 usage() {
-	echo "Usage: test.sh [-abcdzxp]" >&2
+	echo "Usage: test.sh [-abcdfzxp]" >&2
 	echo "  -a               Pack to _anniversary_ WoW edition. (TBC)" >&2
 	echo "  -b               Pack to _classic_ WoW edition. (Prog)" >&2
 	echo "  -c               Pack to _classic_era_ WoW edition. (Classic)" >&2
 	echo "  -d               Pack to _classic_beta_ WoW edition." >&2
+   echo "  -f               Pack to _forever_ WoW edition." >&2
 	echo "  -z               Pack to _classic_ptr_ WoW edition. (Prog PTR)" >&2
 	echo "  -x               Pack to _classic_era_ptr_ WoW edition. (Classic PTR)" >&2
 	echo "  -p               Pack to _ptr_ WoW edition." >&2
@@ -26,7 +27,7 @@ ADDON="$(basename $ADDON_LOC)"
 WOWEDITION="_retail_"
 
 # Commandline inputs
-while getopts ":acbdzxp" opt; do
+while getopts ":acbdfzxp" opt; do
 	case $opt in
       a)
          WOWEDITION="_anniversary_"
@@ -40,6 +41,8 @@ while getopts ":acbdzxp" opt; do
       d)
          WOWEDITION="_classic_beta_"
          is_classic="true";;
+      f)
+         WOWEDITION="_forever_";;
       z)
          WOWEDITION="_classic_ptr_"
          is_classic="true";;
