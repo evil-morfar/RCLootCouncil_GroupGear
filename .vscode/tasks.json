@@ -124,7 +124,8 @@
             "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
-                "focus": true
+                "focus": true,
+                "close": false
             }
         },
         {
@@ -135,7 +136,8 @@
             "problemMatcher": [],
             "presentation": {
                 "reveal": "always",
-                "focus": true
+                "focus": true,
+                "close": false
             }
         }
     ]
