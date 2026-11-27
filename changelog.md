@@ -1,3 +1,7 @@
+# 2.10.0
+
+Added support for Forever.
+
 # 2.9.1
 
 Updated for patch 12.1.5.
