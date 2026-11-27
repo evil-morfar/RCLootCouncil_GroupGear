@@ -1,7 +1,7 @@
 --- Contains the lists used in GroupGear
 local addon =
     LibStub("AceAddon-3.0"):GetAddon(
-       WOW_PROJECT_ID == WOW_PROJECT_MAINLINE
+       (WOW_PROJECT_ID == WOW_PROJECT_MAINLINE or WOW_PROJECT_ID == WOW_PROJECT_CAMELOT)
        and "RCLootCouncil"
        or "RCLootCouncil_Classic")
 

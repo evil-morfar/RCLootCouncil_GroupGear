@@ -1,5 +1,5 @@
 ## Author: Potdisc
-## Interface: 120105
+## Interface: 120105, 16001
 ## Interface-Mists: 50504
 ## Interface-tbc: 20506
 ## Interface-Classic: 11509
